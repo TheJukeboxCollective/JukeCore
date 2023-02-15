@@ -3,12 +3,15 @@ const print = console.log
 require('dotenv').config({ path: `${__dirname}/.env` })
 const path = require('path')
 var request = require('sync-request')
-var fs = require('node:fs/promises')
+const fs = require('fs-extra')
 // Server //
 const express = require('express')
 const app = express()
-const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+const httpserver = require('http').createServer(app);
+const {Server} = require('socket.io');
+const io = new Server(httpserver, {
+  maxHttpBufferSize: 100e6
+});
 
 const { MemberDB, ChannelDB } = require("../jukedb.js")
 
@@ -142,6 +145,26 @@ module.exports = (client) => {
       })
       callback(JSON.parse(res.getBody("utf-8")))
     })
+
+    socket.on("upload", async (folder, filename, event, callback) => {
+      var thisPath = `serverdir/${folder}/${filename}` 
+      switch (event.type) {
+        case "start":
+          var exists = await fs.pathExists(thisPath)
+          if (exists) {
+            await fs.remove(thisPath)
+          }
+        break;
+        case "data":
+          await fs.appendFile(thisPath, event.data)
+        break;
+        case "done":
+          print("Upload complete.")
+        break;
+      }
+
+      callback()
+    })
   })
 
   app.use(function(req, res, next) {
@@ -151,7 +174,7 @@ module.exports = (client) => {
 
   /////////////////////////
 
-  server.listen(8080, "0.0.0.0", (e) => {
+  httpserver.listen(8080, "0.0.0.0", (e) => {
     print("Server Listening!")
   })
 }

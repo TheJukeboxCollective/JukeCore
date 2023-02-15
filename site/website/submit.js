@@ -28,7 +28,43 @@ if (code != null && window.location.pathname.split("/").join("") == "home") {
 }
 
 if (window.location.pathname.split("/").join("") == "submit") {
-	Discord("get", "users/@me").then(userObj => {
-		print(userObj)
-	})
+	function check() {
+		if (document.getElementById("upload-button") != null) {
+			let uploadButton = new Elem("upload-button")
+
+			uploadButton.on("click", e => {
+				var input = document.createElement('input')
+				input.type = 'file'
+
+				input.onchange = async e => { 
+				var file = e.target.files[0]
+				var stream = file.stream()
+				var reader = stream.getReader()
+
+				await socket.emitWithAck("upload", "test", file.name, {type: "start"})
+
+				var fileSize = 0
+				reader.read().then(async function loop({ done, value }) {
+					if (done) {
+						print("done I guess ", fileSize)
+						await socket.emitWithAck("upload", "test", file.name, {type: "done"})
+						return
+					}
+
+					// fileSize += value.length
+					// print(value)
+					await socket.emitWithAck("upload", "test", file.name, {type: "data", data: value})
+
+					return reader.read().then(loop)
+				})
+				}
+
+				input.click()
+			})
+		} else {
+			setTimeout(check,1)
+		}
+	}
+
+	check()
 }

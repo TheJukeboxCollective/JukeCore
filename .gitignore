@@ -1,4 +1,5 @@
 node_modules/
+serverdir/
 package-lock.json
 .env
 credentials.json
