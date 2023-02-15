@@ -290,10 +290,19 @@ class Sheet {
 
         return return_id
     }
+
+    get size() {
+        return new Promise(async (res, rej) => {
+            await this._updateData()
+            res(Object.values(this._data).length-1)
+        })
+    }
 }
 
 var MemberDB = new Sheet("members")
 var ChannelDB = new Sheet("channels")
+var BattleDB = new Sheet("battles")
+var SongDB = new Sheet("songs")
 
 MemberDB.orig_set = MemberDB.set.bind(MemberDB)
 MemberDB.set = async (id, key, value) => {
@@ -319,4 +328,6 @@ MemberDB.set = async (id, key, value) => {
 module.exports = { // JukeDB
     MemberDB: MemberDB,
     ChannelDB: ChannelDB,
+    BattleDB: BattleDB,
+    SongDB: SongDB,
 }

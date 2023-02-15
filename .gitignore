@@ -3,5 +3,3 @@ serverdir/
 package-lock.json
 .env
 credentials.json
-jukecore.sublime-project
-jukecore.sublime-workspace
