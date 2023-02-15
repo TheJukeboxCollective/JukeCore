@@ -172,7 +172,7 @@ module.exports = (client) => {
     res.sendFile('/error.html', {root: path.join(__dirname, 'website')});
   })
 
-  /////////////////////////
+  //////////////////////////
 
   httpserver.listen(8080, "0.0.0.0", (e) => {
     print("Server Listening!")
