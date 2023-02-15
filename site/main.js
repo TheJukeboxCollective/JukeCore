@@ -3,6 +3,7 @@ const print = console.log
 require('dotenv').config({ path: `${__dirname}/.env` })
 const path = require('path')
 var request = require('sync-request')
+var moment = require('moment')
 const fs = require('fs-extra')
 // Server //
 const express = require('express')
@@ -37,7 +38,7 @@ async function parsePage(page) { // that was fucking easy
     var SPLIT = (pageData.includes("\r\n") ? "\r\n" : "\n")
 
     let pageFormat = pageData.substring(5).slice(0, (pageData.indexOf(" -->")-5))
-    pageData = pageData.substring(5+pageFormat.length+8)
+    pageData = pageData.substring(5+pageFormat.length+4+(SPLIT.length*2))
     let pageChunks = pageData.split(`${SPLIT}${SPLIT}<!-- `)
 
     switch (pageFormat) {

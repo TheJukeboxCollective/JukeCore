@@ -29,6 +29,23 @@ const schemas = {
         {type: "String", default: null}, // owner
         {type: "Array", default: []}, // admins
         {type: "Array", default: []}, // managers
+    ],
+    battles: [
+        {type: "String", default: null}, // battle_id
+        {type: "String", default: null}, // host_id
+        {type: "String", default: null}, // title
+        {type: "String", default: null}, // desc
+        {type: "Date", default: Date.now()}, // startTime
+        {type: "Date", default: null}, // endTime
+    ],
+    songs: [
+        {type: "String", default: null}, // song_id
+        {type: "String", default: null}, // battle_id
+        {type: "String", default: null}, // title
+        {type: "Array", default: []}, // authors
+        {type: "Date", default: Date.now()}, // uploadDate
+        {type: "String", default: null}, // filename
+        {type: "Number", default: 0}, // length
     ]
 }
 
@@ -68,6 +85,7 @@ function escape(name, ind, value) {
         break;
         case "String":
             let newStr = value
+            print(value)
             escapedChars.forEach(char => {
                 newStr = newStr.replaceAll(char, "/"+char)
             })

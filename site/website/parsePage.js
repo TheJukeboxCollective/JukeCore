@@ -9,6 +9,8 @@ socket.on("PAGE", (format, args) => {
 		case "GRID":
 			var {gridArea, gridElements, rowCount} = args
 
+			print(gridArea)
+
 			mainContainer.style = `grid-template-areas: ${gridArea}`
 			mainContainer.style.setProperty("grid-template-areas", gridArea)
 			mainContainer.style.setProperty("grid-template-rows", `repeat(${rowCount}, var(--cell-size))`)
