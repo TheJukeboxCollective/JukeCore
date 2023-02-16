@@ -1,70 +1,58 @@
-// Stolen from the Jummbox Font Maker :)
+onNewPage(() => {
+	if (window.location.pathname.split("/").join("") == "submit") {
+		async function check() {
+			if (document.getElementById("upload-input") != null) {
+				let uploadInput = new Elem("upload-input")
+				print(uploadInput)
 
-const OAUTH_LINK = `https://discord.com/api/oauth2/authorize?client_id=1065987974296244224&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fhome&response_type=code&scope=identify%20guilds.join%20guilds`
+				uploadInput.on("change", async e => {
+					print('mmmmkay')
+					var file = e.target.files[0]
+					var stream = file.stream()
+					var reader = stream.getReader()
 
-var SubmitButton = new Elem("submit-button")
+					await socket.emitWithAck("upload", "test", file.name, {type: "start"})
 
-if (localStorage.getItem("access") != null) {
-	SubmitButton.text = "Submit"
-	SubmitButton.style.setProperty("background", "#5A1991")
-	SubmitButton.href = "/submit"
-} else {
-	SubmitButton.text = "Login"
-	SubmitButton.style.setProperty("background", "#5865F2")
-	SubmitButton.href = OAUTH_LINK
-}
+					var fileSize = 0
+					reader.read().then(async function loop({ done, value }) {
+						if (done) {
+							print("done I guess ", fileSize)
+							await socket.emitWithAck("upload", "test", file.name, {type: "done"})
+							return
+						}
 
-var code = new URLSearchParams(window.location.search).get("code")
-if (code != null && window.location.pathname.split("/").join("") == "home") {
-	socket.emit("code", code)
+						// fileSize += value.length
+						// print(value)
+						await socket.emitWithAck("upload", "test", file.name, {type: "data", data: value})
 
-	socket.on("userAccessInfo", async info => {
-		localStorage.setItem("access", JSON.stringify(info))
-
-		SubmitButton.text = "Submit"
-		SubmitButton.style.setProperty("background", "#5A1991")
-		SubmitButton.href = "/submit"
-	})
-}
-
-if (window.location.pathname.split("/").join("") == "submit") {
-	function check() {
-		if (document.getElementById("upload-button") != null) {
-			let uploadButton = new Elem("upload-button")
-
-			uploadButton.on("click", e => {
-				var input = document.createElement('input')
-				input.type = 'file'
-
-				input.onchange = async e => { 
-				var file = e.target.files[0]
-				var stream = file.stream()
-				var reader = stream.getReader()
-
-				await socket.emitWithAck("upload", "test", file.name, {type: "start"})
-
-				var fileSize = 0
-				reader.read().then(async function loop({ done, value }) {
-					if (done) {
-						print("done I guess ", fileSize)
-						await socket.emitWithAck("upload", "test", file.name, {type: "done"})
-						return
-					}
-
-					// fileSize += value.length
-					// print(value)
-					await socket.emitWithAck("upload", "test", file.name, {type: "data", data: value})
-
-					return reader.read().then(loop)
+						return reader.read().then(loop)
+					})
 				})
-				}
 
-				input.click()
-			})
-		} else {
-			setTimeout(check,1)
+				// Load Battles
+				var battlesCont = new Elem("battles-cont")
+
+				var battles = await JukeDB.BattleDB.getActive()
+
+				battles.forEach(battle => {
+					var battleCont = new Elem("div")
+					battleCont.style = "background: #454545"
+
+					var battleTitle = new Elem("p")
+					battleTitle.text = battle.title
+					battleCont.addChild(battleTitle)
+
+					var battleDesc = new Elem("p")
+					battleDesc.text = battle.desc
+					battleCont.addChild(battleDesc)
+
+					battlesCont.addChild(battleCont)
+				})
+			} else {
+				setTimeout(check,1)
+			}
 		}
-	}
 
-	check()
-}
+		check()
+	}
+})

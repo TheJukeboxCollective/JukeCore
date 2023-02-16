@@ -22,6 +22,11 @@ command.addStringOption(option => option.setName("title")
 	.setRequired(true)
 )
 
+command.addStringOption(option => option.setName("description")
+	.setDescription("Description/prompt of the JukeBattle")
+	.setRequired(true)
+)
+
 command.addIntegerOption(option => option.setName("duration")
 	.setDescription("How long the battle lasts")
 	.addChoices(
@@ -33,11 +38,13 @@ command.addIntegerOption(option => option.setName("duration")
 	.setRequired(true)
 )
 
-command.addStringOption(option => option.setName('type')
-	.setDescription("How long the battle lasts")		
+command.addStringOption(option => option.setName('unit')
+	.setDescription("What unit of time to use")		
 	.addChoices(
-		choice("add"),
-		choice("remove")
+		choice("hours"),
+		choice("days"),
+		choice("weeks"),
+		choice("months"),
 	)
 	.setRequired(true)
 )
@@ -48,12 +55,28 @@ async function execute(interaction) {
 	interaction.deferReply()
 
 	let title = interaction.options.get("title").value
+	let desc = interaction.options.get("description").value
+	let duration = interaction.options.get("duration").value
+	let unit = interaction.options.get("unit").value
 
-	let battleCount = await BattleDB.size
-	let battleID = JukeUtils.toID(battleCount)
+	let battleID = await JukeUtils.validID(BattleDB)
+	print(battleID)
+
 	await BattleDB.set(battleID, "title", title)
+	await BattleDB.set(battleID, "desc", desc)
+	await BattleDB.set(battleID, "host", interaction.user.id)
 
-	await interaction.editReply(`battle '${title}' created..`)
+	let battleObj = await BattleDB.get(battleID)
+	await BattleDB.set(battleID, "endTime", moment(battleObj.startTime).add(duration, unit).valueOf())
+	battleObj = await BattleDB.get(battleID)
+
+	await interaction.editReply(
+		`⚔ **New Battle: \`\`${battleObj.title}\`\`** ⚔\n`
+		+`**Desc:** ${battleObj.desc}\n`
+		+`**Host:** <@${battleObj.host}>\n`
+		+`**Due:** ${moment(battleObj.endTime).fromNow()}\n\n`
+		+`*[ID: ${battleID}]*`
+	)
 }
 
 module.exports = {

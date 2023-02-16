@@ -309,6 +309,29 @@ class Sheet {
         return return_id
     }
 
+    async exists(id) {
+        await this._updateData()
+
+        return (this._data[id] != null)
+    }
+
+    async match(func) {
+        await this._updateData()
+
+        var retArr = []
+
+        Object.keys(this._data).forEach(key => {
+            if (key.startsWith("_")) { return }
+            var obj = this._data[key].returnData
+
+            if (func(obj) == true) {
+                retArr.push(obj)
+            }
+        })
+
+        return retArr
+    }
+
     get size() {
         return new Promise(async (res, rej) => {
             await this._updateData()
@@ -332,16 +355,13 @@ MemberDB.set = async (id, key, value) => {
 
     await Promise.all(promises)
 }
-// MemberDB.purchase = async (user, type, amount) => {
-//     let balance = MemberDB.get(user, type)
 
-//     if (balance >= amount) {
-//         await MemberDB.sub(user, type, amount)
-//         return true
-//     } else {
-//         return false
-//     }
-// }
+BattleDB.getActive = async () => {
+    return BattleDB.match(obj => {
+        print(obj)
+        return (Date.now() < obj.endTime)
+    })
+}
 
 module.exports = { // JukeDB
     MemberDB: MemberDB,

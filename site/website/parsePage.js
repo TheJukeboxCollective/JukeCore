@@ -1,6 +1,7 @@
 socket.on("PAGE", (format, args) => {
 	var mainContainer = new Elem("main")
 	mainContainer.clear()
+	mainContainer.style = ``
 
 	switch (format) {
 		case "PLAIN":
@@ -12,7 +13,6 @@ socket.on("PAGE", (format, args) => {
 			print(gridArea)
 
 			mainContainer.style = `grid-template-areas: ${gridArea}`
-			mainContainer.style.setProperty("grid-template-areas", gridArea)
 			mainContainer.style.setProperty("grid-template-rows", `repeat(${rowCount}, var(--cell-size))`)
 
 			// mainContainer.html = Object.values(gridElements).map(obj => obj.html).join("\n")

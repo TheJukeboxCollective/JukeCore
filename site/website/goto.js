@@ -1,0 +1,1 @@
+goto(window.location.pathname.slice(0, -1), false, true)

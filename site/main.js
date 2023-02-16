@@ -14,7 +14,7 @@ const io = new Server(httpserver, {
   maxHttpBufferSize: 100e6
 });
 
-const { MemberDB, ChannelDB } = require("../jukedb.js")
+const JukeDB = require("../jukedb.js")
 
 //// Page Handling ////
 
@@ -27,6 +27,16 @@ const PAGES = {
   "ABOUT": "home",
   "ALBUMS/PKMN-MM-2022": "pkmn-mm-2022",
 }
+
+const getMethods = (obj) => {
+  let properties = new Set()
+  let currentObj = obj
+  do {
+    Object.getOwnPropertyNames(currentObj).map(item => properties.add(item))
+  } while ((currentObj = Object.getPrototypeOf(currentObj)))
+  return [...properties.keys()].filter(item => typeof obj[item] === 'function')
+}
+
 
 async function parsePage(page) { // that was fucking easy 
   page = String(page.toUpperCase())
@@ -146,6 +156,26 @@ module.exports = (client) => {
       })
       callback(JSON.parse(res.getBody("utf-8")))
     })
+
+    socket.on("jukedb", async (DB, method, args, callback) => {
+      args.map(arg => {
+        print(arg)
+      })
+      var res = await JukeDB[DB][method](...args)
+      callback(res)
+    })
+
+    var infoDBs = []
+    var validMethods = {
+      "BattleDB": ["getActive"]
+    }
+    Object.keys(JukeDB).forEach(DB_title => {
+      infoDBs.push({
+        title: DB_title,
+        methods: ["get", "match", "has", "exists"].concat(validMethods[DB_title] || [])
+      })
+    })
+    socket.emit("jukedb_info", infoDBs)
 
     socket.on("upload", async (folder, filename, event, callback) => {
       var thisPath = `serverdir/${folder}/${filename}` 
