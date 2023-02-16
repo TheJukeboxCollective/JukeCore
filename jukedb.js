@@ -85,7 +85,6 @@ function escape(name, ind, value) {
         break;
         case "String":
             let newStr = value
-            print(value)
             escapedChars.forEach(char => {
                 newStr = newStr.replaceAll(char, "/"+char)
             })
