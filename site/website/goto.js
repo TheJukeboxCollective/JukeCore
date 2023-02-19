@@ -1,1 +1,1 @@
-goto(window.location.pathname.slice(0, -1), false, true)
+goto(window.location.pathname.split("/")[1], false, true)

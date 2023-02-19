@@ -1,5 +1,5 @@
 onNewPage(() => {
-	if (window.location.pathname.split("/").join("") == "submit") {
+	if (window.location.pathname.split("/")[1] == "battle") {
 		async function check() {
 			if (document.getElementById("upload-input") != null) {
 				let uploadInput = new Elem("upload-input")

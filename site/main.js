@@ -20,7 +20,7 @@ const JukeDB = require("../jukedb.js")
 
 const PAGES = {
   "HOME": "home",
-  "SUBMIT": "submit",
+  "BATTLE": "battle?",
   "NEWS": "news",
   "COLLECTIVE": "collective",
   "COMMUNITY": "community",
@@ -43,7 +43,7 @@ async function parsePage(page) { // that was fucking easy
   if (Object.keys(PAGES).includes(page)) {
     // let res = request("GET", PAGES[page])
     // let pageData = res.getBody('utf-8')
-    let pageData = String(await fs.readFile(path.join("site/website", "pages", `${PAGES[page]}.html`)))
+    let pageData = String(await fs.readFile(path.join("site/website", "pages", `${PAGES[page].split("?").join("")}.html`)))
     let origPageData = pageData
     var SPLIT = (pageData.includes("\r\n") ? "\r\n" : "\n")
 
@@ -95,6 +95,11 @@ async function parsePage(page) { // that was fucking easy
 module.exports = (client) => {
   Object.keys(PAGES).forEach(page => {
     let urlPath = `/${(page).toLowerCase()}`
+    if (PAGES[page].endsWith("?")) {
+      print(page)
+      // page = page.slice(0,-1)
+      urlPath = `/${(page).toLowerCase()}/:id`
+    }
     app.use(urlPath, express.static(path.join(__dirname, 'website'), {index: false}))
 
     app.get(urlPath, (req, res) => {
@@ -109,6 +114,7 @@ module.exports = (client) => {
   io.on("connection", socket => {
     print("New Socket connected!")
     socket.on("PAGE", async page => {
+      print(page)
       let args = await parsePage(page)
       socket.emit("PAGE", ...args)
     })

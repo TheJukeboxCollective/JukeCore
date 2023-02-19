@@ -28,7 +28,6 @@ class Elem {
 	}
 
 	on(event, callback) {
-		print(event, callback)
 		this.elem.addEventListener(event, callback)
 	}
 

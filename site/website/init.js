@@ -11,14 +11,14 @@ const goto = (url, newTab = true, pageLoad = false) => {
 	if (newTab) {
 		window.open(url, '_blank')
 	} else {
-		url = url.slice(1)
+		if (url.startsWith("/")) { url = url.slice(1) }
 		print(url)
 		socket.emit("PAGE", url)
 		if (url != window.location.pathname.slice(0, -1)) {
 			window.scrollTo(0, 0)
 			if (!pageLoad) { window.history.pushState({page: "newPage"}, "newPage", "/"+url) }
 			newPageFuncs.forEach(func => { func() })
-			var pageName = window.location.pathname.split("/").join("")
+			var pageName = window.location.pathname.split("/")[1]
 			pageName = (pageName[0].toUpperCase()) + (pageName.slice(1).toLowerCase())
 			document.title = `[${pageName}] ••• <Jukebox Music>`
 		}
@@ -70,7 +70,7 @@ Array.from(document.querySelectorAll('a')).forEach(elem => {
 		print(elemURL.host == window.location.host)
 		if (elemURL.host == window.location.host) {
 			e.preventDefault()
-			goto("/"+elem.href.split("/").pop(), false) 
+			goto(elem.href.split("/").pop(), false) 
 		}
 	} 
 })
