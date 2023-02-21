@@ -1,58 +1,22 @@
-onNewPage(() => {
-	if (window.location.pathname.split("/")[1] == "battle") {
-		async function check() {
-			if (document.getElementById("upload-input") != null) {
-				let uploadInput = new Elem("upload-input")
-				print(uploadInput)
+eventListen("battlePageLoad", async () => {
+	let battleTitle = new Elem("battle-title")
+	let battleDesc = new Elem("battle-desc")
+	let battleStatus = new Elem("battle-status")
 
-				uploadInput.on("change", async e => {
-					print('mmmmkay')
-					var file = e.target.files[0]
-					var stream = file.stream()
-					var reader = stream.getReader()
+	let battle_id = window.location.pathname.split("/")[2]
 
-					await socket.emitWithAck("upload", "test", file.name, {type: "start"})
+	let battleObj = await JukeDB.BattleDB.get(battle_id)
 
-					var fileSize = 0
-					reader.read().then(async function loop({ done, value }) {
-						if (done) {
-							print("done I guess ", fileSize)
-							await socket.emitWithAck("upload", "test", file.name, {type: "done"})
-							return
-						}
+	battleTitle.text = battleObj.title
+	battleDesc.text = battleObj.desc
 
-						// fileSize += value.length
-						// print(value)
-						await socket.emitWithAck("upload", "test", file.name, {type: "data", data: value})
+	let voteTime = battleObj.endTime+((battleObj.endTime - battleObj.startTime)/2)
 
-						return reader.read().then(loop)
-					})
-				})
-
-				// Load Battles
-				var battlesCont = new Elem("battles-cont")
-
-				var battles = await JukeDB.BattleDB.getActive()
-
-				battles.forEach(battle => {
-					var battleCont = new Elem("div")
-					battleCont.style = "background: #454545"
-
-					var battleTitle = new Elem("p")
-					battleTitle.text = battle.title
-					battleCont.addChild(battleTitle)
-
-					var battleDesc = new Elem("p")
-					battleDesc.text = battle.desc
-					battleCont.addChild(battleDesc)
-
-					battlesCont.addChild(battleCont)
-				})
-			} else {
-				setTimeout(check,1)
-			}
-		}
-
-		check()
+	if (Date.now() < battleObj.endTime) {
+		battleStatus.setAttr("state", "active")
+	} else if (Date.now() < voteTime) {
+		battleStatus.setAttr("state", "voting"
+)	} else {
+		battleStatus.setAttr("state", "complete")
 	}
 })

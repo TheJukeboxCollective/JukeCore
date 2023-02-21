@@ -20,7 +20,8 @@ const JukeDB = require("../jukedb.js")
 
 const PAGES = {
   "HOME": "home",
-  "BATTLE": "battle?",
+  "BATTLES": "battles*",
+  "BATTLE": "battle",
   "NEWS": "news",
   "COLLECTIVE": "collective",
   "COMMUNITY": "community",
@@ -43,7 +44,17 @@ async function parsePage(page) { // that was fucking easy
   if (Object.keys(PAGES).includes(page)) {
     // let res = request("GET", PAGES[page])
     // let pageData = res.getBody('utf-8')
-    let pageData = String(await fs.readFile(path.join("site/website", "pages", `${PAGES[page].split("?").join("")}.html`)))
+    function cleanse(dirtyPath) {
+      const badCritters = ["?", "*"]
+
+      let returnPath = dirtyPath
+      badCritters.forEach(critter => {
+        returnPath = returnPath.split(critter).join("")
+      })
+
+      return returnPath
+    }
+    let pageData = String(await fs.readFile(path.join("site/website", "pages", `${cleanse(PAGES[page])}.html`)))
     let origPageData = pageData
     var SPLIT = (pageData.includes("\r\n") ? "\r\n" : "\n")
 
@@ -93,18 +104,29 @@ async function parsePage(page) { // that was fucking easy
 }
 
 module.exports = (client) => {
-  Object.keys(PAGES).forEach(page => {
-    let urlPath = `/${(page).toLowerCase()}`
-    if (PAGES[page].endsWith("?")) {
-      print(page)
-      // page = page.slice(0,-1)
-      urlPath = `/${(page).toLowerCase()}/:id`
-    }
+  function setupPath(urlPath) {
     app.use(urlPath, express.static(path.join(__dirname, 'website'), {index: false}))
 
     app.get(urlPath, (req, res) => {
       res.sendFile('/index.html', {root: path.join(__dirname, 'website')});
     })
+  }
+
+  Object.keys(PAGES).forEach(page => {
+    let urlPath = `/${(page).toLowerCase()}`
+    let pageVal = PAGES[page]
+
+    switch (pageVal[pageVal.length-1]) {
+      case '?':
+        setupPath(urlPath+"/:id")
+      break;
+      case '*':
+        setupPath(urlPath)
+        setupPath(urlPath+"/:id")
+      break;
+      default:
+        setupPath(urlPath)
+    }
   })
 
   app.get("/", (req, res) => {
@@ -114,9 +136,13 @@ module.exports = (client) => {
   io.on("connection", socket => {
     print("New Socket connected!")
     socket.on("PAGE", async page => {
-      print(page)
       let args = await parsePage(page)
-      socket.emit("PAGE", ...args)
+      if (args != null) {
+        socket.emit("PAGE", page, ...args)
+      } else {
+        print("NULL PAGE, EW WTFF")
+        socket.emit("NULL_PAGE", page)
+      }
     })
 
     socket.on("code", code => {
@@ -164,9 +190,9 @@ module.exports = (client) => {
     })
 
     socket.on("jukedb", async (DB, method, args, callback) => {
-      args.map(arg => {
-        print(arg)
-      })
+      // args.map(arg => {
+      //   print(arg)
+      // })
       var res = await JukeDB[DB][method](...args)
       callback(res)
     })
@@ -178,7 +204,7 @@ module.exports = (client) => {
     Object.keys(JukeDB).forEach(DB_title => {
       infoDBs.push({
         title: DB_title,
-        methods: ["get", "match", "has", "exists"].concat(validMethods[DB_title] || [])
+        methods: ["get", "getAll", "match", "has", "exists"].concat(validMethods[DB_title] || [])
       })
     })
     socket.emit("jukedb_info", infoDBs)

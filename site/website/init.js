@@ -25,6 +25,21 @@ const goto = (url, newTab = true, pageLoad = false) => {
 	}
 }
 
+const switchTo = (url, pageLoad = false, realUrl = window.location.pathname) => {
+	if (url.startsWith("/")) { url = url.slice(1) }
+	if (realUrl.startsWith("/")) { realUrl = realUrl.slice(1) }
+	print(realUrl)
+	socket.emit("PAGE", url)
+	if (url != window.location.pathname.slice(0, -1)) {
+		window.scrollTo(0, 0)
+		if (!pageLoad) { window.history.pushState({page: "newPage"}, "newPage", "/"+realUrl) }
+		newPageFuncs.forEach(func => { func() })
+		var pageName = window.location.pathname.split("/")[1]
+		pageName = (pageName[0].toUpperCase()) + (pageName.slice(1).toLowerCase())
+		document.title = `[${pageName}] ••• <Jukebox Music>`
+	}
+}
+
 function onNewPage(func) {
 	newPageFuncs.push(func)
 }
@@ -93,4 +108,30 @@ socket.on("jukedb_info", DBs => {
 	})
 })
 
-print(JukeDB)
+new Array("collective", "community").forEach(type => {
+	print(type)
+	var dropDown = new Elem(document.querySelector(`.drop-down[${type}]`))
+
+	dropDown.style.setProperty("--drop-down-height", `${dropDown.height}px`)
+
+	new ResizeObserver(() => {
+		dropDown.style.setProperty("--drop-down-height", `${dropDown.height}px`)
+	}).observe(dropDown.elem)
+})
+
+var eventListeners = {}
+function eventListen(event, func) {
+	if (Array.isArray(eventListeners[event])) {
+		eventListeners[event].push(func)
+	} else {
+		eventListeners[event] = [func]
+	}
+}
+
+function eventFire(event) {
+	if (Array.isArray(eventListeners[event])) {
+		eventListeners[event].forEach(func => {
+			func()
+		})
+	}
+}

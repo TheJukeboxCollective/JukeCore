@@ -1,2 +1,39 @@
-<input id="upload-input" type="file"></input>
-<div id="battles-cont"></div>
+<style>
+	#battle-title {
+		font-family: Big Card;
+		font-size: 72px;
+		text-align: center;
+		margin-top: 50px;
+		margin-bottom: 10px;
+	}
+
+	#battle-status {
+		font-family: Mid Card;
+		font-size: 36px;
+		text-align: center;
+		margin: 0px;
+	}
+
+	#battle-status[state=active]::after { color: #8CD612; content: "• Active •" }
+	#battle-status[state=voting]::after { color: #F68F37; content: "• Voting •" }
+	#battle-status[state=complete]::after { color: #6A31CA; content: "• Completed •" }
+
+	#battle-desc {
+		font-family: Mid Card;
+		font-size: 32px;
+		color: #ffffff7c;
+		text-align: center;
+	}
+</style>
+
+<p id="battle-title"></p>
+<p id="battle-status" state=active></p>
+<p id="battle-desc"></p>
+
+
+<div id="as-in-divider"></div>
+
+
+<div id="song-cont"></div>
+
+<div id="file-upload-cont"></div>

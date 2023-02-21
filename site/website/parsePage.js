@@ -1,4 +1,4 @@
-socket.on("PAGE", (format, args) => {
+socket.on("PAGE", (page, format, args) => {
 	var mainContainer = new Elem("main")
 	mainContainer.clear()
 	mainContainer.style = ``
@@ -14,6 +14,7 @@ socket.on("PAGE", (format, args) => {
 
 			mainContainer.style = `grid-template-areas: ${gridArea}`
 			mainContainer.style.setProperty("grid-template-rows", `repeat(${rowCount}, var(--cell-size))`)
+			mainContainer.style.setProperty("display", `grid`)
 
 			// mainContainer.html = Object.values(gridElements).map(obj => obj.html).join("\n")
 
@@ -52,4 +53,6 @@ socket.on("PAGE", (format, args) => {
 			})
 		break;
 	}
+
+	eventFire(page+"PageLoad")
 })

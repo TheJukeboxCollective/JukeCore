@@ -197,7 +197,7 @@ class Sheet {
         this._data = formatData(this._name, data)
     }
 
-    async get(id, key) {
+    async get(id) {
         await this._updateData()
         let idObj = this._data[id]
         if (idObj != null) {
@@ -324,10 +324,16 @@ class Sheet {
             var obj = this._data[key].returnData
 
             if (func(obj) == true) {
+                obj.id = key
                 retArr.push(obj)
             }
         })
 
+        return retArr
+    }
+
+    async getAll(func) {
+        let retArr = await this.match((obj) => {return true})
         return retArr
     }
 
