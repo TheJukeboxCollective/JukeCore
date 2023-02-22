@@ -79,16 +79,20 @@ Object.defineProperty(Elem.prototype, "href", {
 	}
 })
 
-Array.from(document.querySelectorAll('a')).forEach(elem => {
-	elem.onclick = e => {
-		let elemURL = new URL(elem.href)
-		print(elemURL.host == window.location.host)
-		if (elemURL.host == window.location.host) {
-			e.preventDefault()
-			goto(elem.href.split("/").pop(), false) 
-		}
-	} 
-})
+function updateAnchors() {
+	print("bitch")
+	Array.from(document.querySelectorAll('a')).forEach(elem => {
+		elem.onclick = e => {
+			let elemURL = new URL(elem.href)
+			print(elemURL.host == window.location.host)
+			if (elemURL.host == window.location.host) {
+				e.preventDefault()
+				goto(elem.href.split("/").pop(), false) 
+			}
+		} 
+	})
+}
+updateAnchors()
 
 var Discord = (method, path, data = null) => {
 	var access_token = JSON.parse(localStorage.getItem("access")).access_token

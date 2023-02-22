@@ -13,6 +13,13 @@
     src: url("fonts/BAUHS93.TTF");
 }
 
+img.emoji {
+   height: 1em;
+   width: 1em;
+   margin: 0 .05em 0 .1em;
+   vertical-align: -0.1em;
+}
+
 body {
 	display: flex;
 	color: white;
@@ -29,6 +36,20 @@ body {
 
 a {
     text-decoration: none;
+}
+
+@keyframes loading {
+    from {rotate: 0deg}
+    to {rotate: 360deg}
+}
+
+#loading-icon {
+    width: 512px;
+    height: 512px;
+    animation: loading 1s infinite;
+    fill: #ffffff25;
+    margin-top: 100px;
+    margin-left: calc(50% - (512px / 2));
 }
 
 #header-div {
@@ -182,7 +203,7 @@ a {
     height: 100%;
     font-size: 32px;
     margin-block-end: 1em;
-    border-radius: 100px;
+    border-radius: 25px;
 }
 
 .drop-down > a:hover {
