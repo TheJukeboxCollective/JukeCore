@@ -80,7 +80,6 @@ Object.defineProperty(Elem.prototype, "href", {
 })
 
 function updateAnchors() {
-	print("bitch")
 	Array.from(document.querySelectorAll('a')).forEach(elem => {
 		elem.onclick = e => {
 			let elemURL = new URL(elem.href)
@@ -139,3 +138,5 @@ function eventFire(event) {
 		})
 	}
 }
+
+window.onpopstate = e => { newPop() }
