@@ -43,6 +43,7 @@ eventListen("battlesPageLoad", async () => {
 			battleTime.text = `Battle ended ${timeStamp}`
 		}
 		battleTime.classes.add("battle-time")
+		battleTime.setAttr("title", `Due Date: ${moment(battleObj.endTime).format('MMMM Do YYYY, h:mm a')}`)
 		battleTitle.addChild(battleTime)
 
 		battleCont.addChild(battleTitle)

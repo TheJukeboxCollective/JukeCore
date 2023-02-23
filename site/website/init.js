@@ -20,7 +20,7 @@ const goto = (url, newTab = true, pageLoad = false) => {
 			newPageFuncs.forEach(func => { func() })
 			var pageName = window.location.pathname.split("/")[1]
 			pageName = (pageName[0].toUpperCase()) + (pageName.slice(1).toLowerCase())
-			document.title = `[${pageName}] ••• <Jukebox Music>`
+			document.title = `${pageName} 🎶 <JukeBox>`
 		}
 	}
 }
@@ -36,7 +36,7 @@ const switchTo = (url, pageLoad = false, realUrl = window.location.pathname) => 
 		newPageFuncs.forEach(func => { func() })
 		var pageName = window.location.pathname.split("/")[1]
 		pageName = (pageName[0].toUpperCase()) + (pageName.slice(1).toLowerCase())
-		document.title = `[${pageName}] ••• <Jukebox Music>`
+		document.title = `${pageName} 🎶 <JukeBox>`
 	}
 }
 

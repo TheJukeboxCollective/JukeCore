@@ -35,7 +35,7 @@ const schemas = {
         {type: "String", default: null}, // host_id
         {type: "String", default: null}, // title
         {type: "String", default: null}, // desc
-        {type: "Date", default: Date.now()}, // startTime
+        {type: "Date", default: "NOW"}, // startTime
         {type: "Date", default: null}, // endTime
     ],
     songs: [
@@ -43,7 +43,7 @@ const schemas = {
         {type: "String", default: null}, // battle_id
         {type: "String", default: null}, // title
         {type: "Array", default: []}, // authors
-        {type: "Date", default: Date.now()}, // uploadDate
+        {type: "Date", default: "NOW"}, // uploadDate
         {type: "String", default: null}, // filename
         {type: "Number", default: 0}, // length
     ]
@@ -99,6 +99,13 @@ function escape(name, ind, value) {
         break;
         case "Boolean":
             return value
+        break;
+        case "Date":
+            if (value == "NOW") {
+                return Date.now()
+            } else {
+                return value
+            }
         break;
         default:
             return value
