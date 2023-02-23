@@ -60,15 +60,14 @@ async function execute(interaction) {
 	let unit = interaction.options.get("unit").value
 
 	let battleID = await JukeUtils.validID(BattleDB)
-	print(battleID)
 
-	await BattleDB.set(battleID, "title", title)
-	await BattleDB.set(battleID, "desc", desc)
-	await BattleDB.set(battleID, "host", interaction.user.id)
-
-	let battleObj = await BattleDB.get(battleID)
-	await BattleDB.set(battleID, "endTime", moment(battleObj.startTime).add(duration, unit).valueOf())
-	battleObj = await BattleDB.get(battleID)
+	var battleObj = await BattleDB.setUp(battleID, {
+		title: title,
+		desc: desc,
+		host: interaction.user.id,
+		startTime: Date.now(),
+		endTime: moment().add(duration, unit).valueOf()
+	})
 
 	await interaction.editReply(
 		`⚔ **New Battle: \`\`${battleObj.title}\`\`** ⚔\n`

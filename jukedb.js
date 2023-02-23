@@ -260,6 +260,56 @@ class Sheet {
         await this._updateData()
     }
 
+    async setUp(id, obj) {
+        let idObj = await this.get(id)
+        let idData = this._data[id]
+        let exists = (idObj != null)
+
+        var rowData = []
+        if (exists) {
+            rowData = idData._rowData
+        } else {
+            rowData = schemas[this._name].map((sch, thisInd) => escape(this._name, thisInd, sch.default))
+            rowData[0] = id
+        }
+
+        Object.keys(obj).forEach(key => {
+            var ind = this._data._rowIndex[key]
+            var val = obj[key]
+            var def = schemas[this._name][ind].default
+
+            rowData[ind] = escape(this._name, ind, val)
+        })
+
+        if (exists) {
+            await this._sheet.updateRow(idData._index, rowData)
+        } else {
+            await this._sheet.insertRows([rowData])
+        }
+
+        await this._updateData()
+
+        return this._data[id].returnData
+
+        // Basically, this method would allow you to set multiple values on a db
+        // Hella useful for initializing a new obj, such as battles where Input a bunch of info
+        // Might have to make a new method on the gsheet.js module
+        /* Example Usage:
+
+            BattleDB.setUp(battleID, {
+                host: interaction.user.id,
+                title: battleTitle,
+                desc: battleDesc,
+                // startTime wouldn't need to be defined because it would be set to the default (Date.now())
+                endTime: moment().add(duration, unit).toValue()
+            })
+        */
+        // I would also use this on file uploads and user registration
+        // This can be used to create a new db obj, but also update just so you know
+        // This means, keys that aren't defined on a new obj will be set to the default value
+        // While for preexisting objs, they just remain the same value they currently are!
+    }
+
     async add(id, key, value) {
         await this._updateData()
         let idData = this._data[id]
