@@ -27,10 +27,13 @@ eventListen("userPageLoad", async () => {
 	let userName = new Elem("user-name")
 	userName.text = (userObjDB.name || userObjcord.username)
 
+	let userIcon = new Elem("user-icon")
+	userIcon.setAttr("src", userObjcord.displayAvatarURL)
+
 	let jukesBalance = new Elem("balance-jukes")
 	let boxesBalance = new Elem("balance-boxes")
-	jukesBalance.text = userObjDB.jukes
-	boxesBalance.text = userObjDB.boxes
+	jukesBalance.text = userObjDB.jukes.toLocaleString("en-US")
+	boxesBalance.text = userObjDB.boxes.toLocaleString("en-US")
 
 	//// No placings in the database yet really really
 

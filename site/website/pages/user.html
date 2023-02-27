@@ -1,9 +1,64 @@
-<style></style>
+<style>
+	#user-icon {
+		width: 320px;
+		height: auto;
+		background: #0d0d0d;
+		margin-left: -50px;
+		object-fit: cover;
+		rotate: -6.72deg;
+		border-radius: 15px;
+		box-shadow: 0px 0px 0px 15px #151515;
+	}
 
+	#user-name {
+		display: grid;
+		font-family: Big Card;
+		font-size: 72px;
+		width: 480px;
+		height: 150px;
+		margin: 0px;
+		margin-top: 15px;
+		color: white;
+		align-items: center;
+	}
+
+	#balance-cont {
+		display: flex;
+	}
+
+	.balance {
+		display: flex;
+	}
+
+	.balance > p {
+		display: grid;
+		font-family: Mid Card;
+		font-size: 32px;
+		width:  152px;
+		height: 48px;
+		margin: 0px;
+		margin-top: 8px;
+		background: #353535;
+		border-radius: 48px;
+		text-align: center;
+		align-items: center;
+	}
+
+	.balance > img {
+		width: 64px;
+		height: 64px;
+	}
+</style>
+
+<img id="user-icon"/>
 <p id="user-name"></p>
 <div id="balance-cont">
-	<p id="balance-jukes"></p>
-	<p id="balance-boxes"></p>
+	<div class="balance">
+		<img src="jukeCoin.svg"/> <p id="balance-jukes"></p>
+	</div>
+	<div class="balance">
+		<img src="boxCoin.svg"/> <p id="balance-boxes"></p>
+	</div>
 </div>
 <div id="placings-cont">
 	<p id="placings-golds"></p>
