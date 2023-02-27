@@ -18,6 +18,7 @@ function getAllFuncs(toCheck) {
 const schemas = {
     members: [
         {type: "String", default: null}, // user_id
+        {type: "String", default: null}, // name
         {type: "Number", default: 0}, // jukes
         {type: "Number", default: 0}, // boxes
         {type: "String", default: null}, // channel_id

@@ -92,6 +92,14 @@ class Elem {
     get children() {
         return Array.from(this.elem.children).map(element => new Elem(element));
     }
+
+    set href(val) {
+    	this.elem.setAttribute("href", val)
+    }
+
+    get href() {
+    	this.elem.getAttribute("href")
+    }
 }
 
 const InputFields = {

@@ -52,6 +52,16 @@ a {
     margin-left: calc(50% - (512px / 2));
 }
 
+#login-status {
+    position: fixed;
+    width: 10%;
+    font-family: Mid Card;
+    font-size: 32px;
+    color: #ffffff7c;
+    margin-left: 5px;
+    margin-top: 5px;
+}
+
 #header-div {
     display: flex;
     z-index: 20;
@@ -61,38 +71,7 @@ a {
     align-items: flex-start;
     filter: drop-shadow(0px 15px 0px #00000025) drop-shadow(0px 40px 15px #0000007c);
     --button-width: calc(10vw - 100px); 
-}
-
-#header-div > a {
-    display: flex;
     justify-content: center;
-    align-items: center;
-    font-family: Mid Card;
-    font-size: 24px;
-    width: var(--button-width);
-    height: 32px;
-    margin: 5px;
-    margin-left: 20px;
-    margin-right: 20px;
-    padding: 5px;
-    border-radius: 15px;
-    transition-duration: 100ms;
-    color: #ffffff7c;
-    background: #5A1991;
-}
-
-#header-div > a:hover {
-    color: white;
-    background: #6A31CA;
-}
-
-
-#submit-button {
-    float: left;
-}
-
-#login-button {
-    float: right;
 }
 
 #header-buttons-cont {
@@ -102,7 +81,7 @@ a {
 	margin-top: 0px;
 	border-bottom-left-radius: 100px;
 	border-bottom-right-radius: 100px;
-    margin-left: calc(10vw - (var(--button-width) + 30px));
+/*    margin-left: calc(10vw - (var(--button-width) + 30px));*/
 }
 
 #header-buttons {
@@ -227,8 +206,8 @@ a {
 #main {
     background: #151515;
     position: absolute;
-    margin-left: calc((100vw - var(--width)) / 2);
-    margin-right: calc((100vw - var(--width)) / 2);
+    margin-left: calc((100vw - var(--width) - 50px) / 2);
+/*    margin-right: calc((100vw - var(--width)) / 2);*/
     padding: 25px;
     padding-top: 130px;
     /* background: #353535; */

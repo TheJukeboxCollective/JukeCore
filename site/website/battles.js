@@ -27,7 +27,8 @@ eventListen("battlesPageLoad", async () => {
 		var battleCont = new Elem("div")
 		battleCont.classes.add("battle")
 
-		var battleTitle = new Elem("p")
+		var battleTitle = new Elem("a")
+		battleTitle.href = `/battles/${battleObj.id}`
 		battleTitle.text = battleObj.title
 		battleTitle.classes.add("battle-title")
 
@@ -53,9 +54,11 @@ eventListen("battlesPageLoad", async () => {
 		battleDesc.classes.add("battle-desc")
 		battleCont.addChild(battleDesc)
 
-		battleCont.on("click", e => {
-			switchTo(`battle`, false, `battles/${battleObj.id}`)
-		})
+		// battleCont.on("click", e => {
+		// 	e.preventDefault()
+		// 	switchTo(`battle`, false, `/battles/${battleObj.id}`)
+		// })
+		updateAnchors()
 
 		battlesCont.addChild(battleCont)
 	})

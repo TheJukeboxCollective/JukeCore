@@ -22,6 +22,7 @@ const PAGES = {
   "HOME": "home",
   "BATTLES": "battles*",
   "BATTLE": "battle",
+  "USER": "user*",
   "NEWS": "news",
   "COLLECTIVE": "collective",
   "COMMUNITY": "community",
@@ -188,6 +189,21 @@ module.exports = (client) => {
       })
       callback(JSON.parse(res.getBody("utf-8")))
     })
+
+    var bot_methods = ["user", "channel", ["guild", process.env['guild']]]
+    socket.on("jukebot", async (method, args, callback) => {
+      switch (method) {
+        case 'user':
+          let user = await client.users.fetch(args[0])
+          callback(user)
+        break;
+        case 'channel':
+          let channel = await client.channels.fetch(args[0])
+          callback(channel)
+        break;
+      }
+    })
+    socket.emit("jukebot_info", bot_methods)
 
     socket.on("jukedb", async (DB, method, args, callback) => {
       // args.map(arg => {

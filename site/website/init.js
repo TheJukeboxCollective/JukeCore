@@ -7,28 +7,9 @@ var newPageFuncs = []
 
 //// Utility Functions
 
-const goto = (url, newTab = true, pageLoad = false) => {
-	if (newTab) {
-		window.open(url, '_blank')
-	} else {
-		if (url.startsWith("/")) { url = url.slice(1) }
-		print(url)
-		socket.emit("PAGE", url)
-		if (url != window.location.pathname.slice(0, -1)) {
-			window.scrollTo(0, 0)
-			if (!pageLoad) { window.history.pushState({page: "newPage"}, "newPage", "/"+url) }
-			newPageFuncs.forEach(func => { func() })
-			var pageName = window.location.pathname.split("/")[1]
-			pageName = (pageName[0].toUpperCase()) + (pageName.slice(1).toLowerCase())
-			document.title = `${pageName} 🎶 <JukeBox>`
-		}
-	}
-}
 
-const switchTo = (url, pageLoad = false, realUrl = window.location.pathname) => {
-	if (url.startsWith("/")) { url = url.slice(1) }
-	if (realUrl.startsWith("/")) { realUrl = realUrl.slice(1) }
-	print(realUrl)
+const TO = (url, pageLoad, realUrl = url) => {
+	print(url)
 	socket.emit("PAGE", url)
 	if (url != window.location.pathname.slice(0, -1)) {
 		window.scrollTo(0, 0)
@@ -37,7 +18,23 @@ const switchTo = (url, pageLoad = false, realUrl = window.location.pathname) => 
 		var pageName = window.location.pathname.split("/")[1]
 		pageName = (pageName[0].toUpperCase()) + (pageName.slice(1).toLowerCase())
 		document.title = `${pageName} 🎶 <JukeBox>`
+		print(document.title)
 	}
+}
+
+const goto = (url, newTab = true, pageLoad = false) => {
+	if (newTab) {
+		window.open(url, '_blank')
+	} else {
+		if (url.startsWith("/")) { url = url.slice(1) }
+		TO(url, pageLoad)
+	}
+}
+
+const switchTo = (url, pageLoad = false, realUrl = window.location.pathname) => {
+	if (url.startsWith("/")) { url = url.slice(1) }
+	if (realUrl.startsWith("/")) { realUrl = realUrl.slice(1) }
+	TO(url, pageLoad, realUrl)
 }
 
 function onNewPage(func) {
@@ -56,6 +53,26 @@ function randi(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
+}
+
+function occurrences(string, subString, allowOverlapping = false) {
+
+    string += "";
+    subString += "";
+    if (subString.length <= 0) return (string.length + 1);
+
+    var n = 0,
+        pos = 0,
+        step = allowOverlapping ? 1 : subString.length;
+
+    while (true) {
+        pos = string.indexOf(subString, pos);
+        if (pos >= 0) {
+            ++n;
+            pos += step;
+        } else break;
+    }
+    return n;
 }
 
 //// Anchor Elements do the thing
@@ -79,6 +96,10 @@ Object.defineProperty(Elem.prototype, "href", {
 	}
 })
 
+const SHORTENS = {
+	battles: "battle",
+	users: "user"
+}
 function updateAnchors() {
 	Array.from(document.querySelectorAll('a')).forEach(elem => {
 		elem.onclick = e => {
@@ -86,7 +107,13 @@ function updateAnchors() {
 			print(elemURL.host == window.location.host)
 			if (elemURL.host == window.location.host) {
 				e.preventDefault()
-				goto(elem.href.split("/").pop(), false) 
+				var dest = elem.href.split(window.location.host)[1]
+				let ind = 0
+				if (dest.startsWith("/")) {ind = 1}
+				var page = dest.split("/")[ind]
+				if (Object.keys(SHORTENS).includes(page) && (occurrences(dest, "/") - ind) > 0) { page = SHORTENS[page] }
+				print(page, dest)
+				switchTo(page, false, dest) 
 			}
 		} 
 	})
@@ -97,6 +124,19 @@ var Discord = (method, path, data = null) => {
 	var access_token = JSON.parse(localStorage.getItem("access")).access_token
 	return socket.emitWithAck("discord", access_token, method, path, data)
 }
+	
+var JukeBot = {}
+socket.on("jukebot_info", methods => {
+	methods.forEach(method => {
+		if (!Array.isArray(method)) {
+			JukeBot[method] = (...args) => {
+				return socket.emitWithAck("jukebot", method, [...args])
+			}
+		} else { // properties
+			JukeBot[method[0]] = method[1]
+		}
+	})	
+})
 
 var JukeDB = {}
 
