@@ -419,6 +419,20 @@ MemberDB.set = async (id, key, value) => {
     await Promise.all(promises)
 }
 
+MemberDB.validBadges = (obj) => {
+    if (Object.values(obj.badges).some(val => val == true)) {
+        let returnArr = []
+        Object.keys(obj.badges).forEach((key, i) => {
+            if (obj.badges[key] == true) {
+                returnArr.push(key)
+            }
+        })
+        return returnArr
+    } else {
+        return null
+    }
+}
+
 BattleDB.getActive = async () => {
     return BattleDB.match(obj => {
         print(obj)

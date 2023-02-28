@@ -75,6 +75,14 @@ function occurrences(string, subString, allowOverlapping = false) {
     return n;
 }
 
+function measureText(text) {
+    var canvas = new Elem("canvas")
+    var ctx = canvas.elem.getContext("2d")
+    ctx.style = "font-family: Big Card;"
+
+    return ctx.measureText(text)
+}
+
 //// Anchor Elements do the thing
 
 Object.defineProperty(Elem.prototype, "href", {

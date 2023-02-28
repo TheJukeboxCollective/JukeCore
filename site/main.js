@@ -16,6 +16,9 @@ const io = new Server(httpserver, {
 
 const JukeDB = require("../jukedb.js")
 
+const websitePath = path.resolve(__dirname, 'website')
+const badgePath = path.resolve(__dirname, '../badges')
+
 //// Page Handling ////
 
 const PAGES = {
@@ -55,7 +58,7 @@ async function parsePage(page) { // that was fucking easy
 
       return returnPath
     }
-    let pageData = String(await fs.readFile(path.join("site/website", "pages", `${cleanse(PAGES[page])}.html`)))
+    let pageData = String(await fs.readFile(path.join(websitePath, "pages", `${cleanse(PAGES[page])}.html`)))
     let origPageData = pageData
     var SPLIT = (pageData.includes("\r\n") ? "\r\n" : "\n")
 
@@ -106,10 +109,11 @@ async function parsePage(page) { // that was fucking easy
 
 module.exports = (client) => {
   function setupPath(urlPath) {
-    app.use(urlPath, express.static(path.join(__dirname, 'website'), {index: false}))
+    app.use(urlPath, express.static(websitePath, {index: false}))
+    app.use(urlPath, express.static(badgePath, {index: false}))
 
     app.get(urlPath, (req, res) => {
-      res.sendFile('/index.html', {root: path.join(__dirname, 'website')});
+      res.sendFile('/index.html', {root: path.resolve(__dirname, "../")});
     })
   }
 
@@ -187,7 +191,20 @@ module.exports = (client) => {
           Authorization: `Bearer ${access_token}`
         }
       })
-      callback(JSON.parse(res.getBody("utf-8")))
+
+      var resText;
+
+      try {
+        resText = res.getBody("utf-8")
+      } catch (err) {
+        resText = err  
+      }
+
+      if (typeof resText == "string") {
+        callback(JSON.parse(resText))
+      } else {
+        callback(null)
+      }
     })
 
     var bot_methods = ["user", "channel", ["guild", process.env['guild']]]
@@ -215,6 +232,7 @@ module.exports = (client) => {
 
     var infoDBs = []
     var validMethods = {
+      "MemberDB": ["validBadges"],
       "BattleDB": ["getActive"]
     }
     Object.keys(JukeDB).forEach(DB_title => {
@@ -248,7 +266,7 @@ module.exports = (client) => {
 
   app.use(function(req, res, next) {
     res.status(404)
-    res.sendFile('/error.html', {root: path.join(__dirname, 'website')});
+    res.sendFile('/error.html', {root: websitePath});
   })
 
   //////////////////////////

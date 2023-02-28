@@ -2,7 +2,7 @@
 	#user-icon {
 		width: 320px;
 		height: auto;
-		background: #0d0d0d;
+		background: #151515;
 		margin-left: -50px;
 		object-fit: cover;
 		rotate: -6.72deg;
@@ -48,26 +48,87 @@
 		width: 64px;
 		height: 64px;
 	}
+
+	#card {
+		display: flex;
+	}
+
+	#left-card {
+		width: 40%;
+	}
+
+	#right-card {
+		width: 60%;
+	}
+
+	#badges-cont {
+	    display: grid;
+	    background: #353535;
+	    --gyap: 7px;
+	    padding: var(--gyap);
+	    padding-top: calc(var(--gyap) * 2);
+	    padding-bottom: calc(var(--gyap) * 2);
+	    /* width: 100%; */
+	    /* height: 450px; */
+	    width: calc(100% - (var(--gyap) * 2));
+	    height: calc(400px - (var(--gyap) * 2));
+	    border-radius: 15px;
+	    grid-template-columns: 50% 50%;
+	    justify-items: center;
+	    grid-auto-rows: min-content;
+	    row-gap: calc(var(--gyap) * 2);
+	}
+
+	#user-badges {
+	    display: grid;
+	    font-family: 'Big Card';
+	    font-size: 64px;
+	    color: #ffffff75;
+	    margin: 0px;
+	    margin-top: 64px;
+	    margin-bottom: 16px;
+	    align-items: center;
+	    grid-template-columns: 1.5em calc(100% - 1.5em);
+	}
+
+	#user-badges > img {
+		width: 1.5em;
+		height: 1.5em;
+	}
+
+	#no-badges {
+		font-family: Big Card;
+		font-size: 64px;
+		color: #151515ac;
+	}
 </style>
 
-<img id="user-icon"/>
-<p id="user-name"></p>
-<div id="balance-cont">
-	<div class="balance">
-		<img src="jukeCoin.svg"/> <p id="balance-jukes"></p>
+<div id="card">
+	<div id="left-card">
+		<img id="user-icon"/>
+		<p id="user-name"></p>
+		<div id="balance-cont">
+			<div class="balance">
+				<img src="jukeCoin.svg"/> <p id="balance-jukes"></p>
+			</div>
+			<div class="balance">
+				<img src="boxCoin.svg"/> <p id="balance-boxes"></p>
+			</div>
+		</div>
+		<div id="placings-cont">
+			<p id="placings-golds"></p>
+			<p id="placings-silvers"></p>
+			<p id="placings-bronzes"></p>
+		</div>
 	</div>
-	<div class="balance">
-		<img src="boxCoin.svg"/> <p id="balance-boxes"></p>
+	<div id="right-card">
+		<p id="user-badges"></p>
+		<div id="badges-cont">
+			<p id="no-badges" style="display: none;">No Badges...</p>
+		</div>
+		<div id="channel-cont">
+			<a id="channel-name"></a>
+			<p id="channel-likes"></p>
+		</div>
 	</div>
-</div>
-<div id="placings-cont">
-	<p id="placings-golds"></p>
-	<p id="placings-silvers"></p>
-	<p id="placings-bronzes"></p>
-</div>
-<p id="user-badges"></p>
-<div id="badges-cont"></div>
-<div id="channel-cont">
-	<a id="channel-name"></a>
-	<p id="channel-likes"></p>
 </div>

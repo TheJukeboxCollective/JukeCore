@@ -4,6 +4,7 @@ const print = console.log
 const GUILD_ID = process.env['guild']
 
 //// Requires
+const path = require('path')
 const { createCanvas, registerFont, loadImage } = require('canvas')
 const { MemberDB, ChannelDB } = require("../../jukedb.js")
 
@@ -169,7 +170,7 @@ async function make(client, userId) {
 		Object.keys(userObjDB.badges).forEach((key, i) => {
 			var thisFunc = async () => {
 				if (userObjDB.badges[key] == true) {
-					let badgeImg = await loadImage(DIR+`badges/${key}.png`)
+					let badgeImg = await loadImage(path.resolve(__dirname, `../../badges/${key}.png`))
 					let badgePos = calcCellPos(i)
 					ctx.drawImage(badgeImg, badgePos.x, badgePos.y)
 					return true

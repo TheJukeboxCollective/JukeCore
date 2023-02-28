@@ -1,4 +1,4 @@
-socket.on("PAGE", (page, format, args) => {
+socket.on("PAGE", async (page, format, args) => {
 	var mainContainer = new Elem("main")
 	mainContainer.clear()
 	mainContainer.style = ``
@@ -54,5 +54,6 @@ socket.on("PAGE", (page, format, args) => {
 		break;
 	}
 
+	// I need the loading page pack
 	eventFire(page+"PageLoad")
 })

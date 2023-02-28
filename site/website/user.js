@@ -26,6 +26,10 @@ eventListen("userPageLoad", async () => {
 
 	let userName = new Elem("user-name")
 	userName.text = (userObjDB.name || userObjcord.username)
+	var textWidth = measureText(userName.text).width
+	if (textWidth > 60) {
+		userName.style.setProperty("font-size", (72*(60/textWidth)))
+	}
 
 	let userIcon = new Elem("user-icon")
 	userIcon.setAttr("src", userObjcord.displayAvatarURL+"?size=1024")
@@ -49,4 +53,25 @@ eventListen("userPageLoad", async () => {
 
 
 	document.title = `@${userName.text} 🎶 <JukeBox>`
+
+	let userBadges = new Elem("user-badges")
+	userBadges.text = `🎖️ Badges (${1})`
+
+	let badgesCont = new Elem("badges-cont")
+	let noBadgesInd = new Elem("no-badges")
+
+	// let badges = ["PKMN M&M 2022", "PKMN M&M 2022", "PKMN M&M 2022", "PKMN M&M 2022", "PKMN M&M 2022"]
+	let badges = await MemberDB.validBadges(userObjDB)
+	if (badges) {
+		noBadgesInd.style = "display: none;"
+		badges.forEach(badge => {
+			print(badge)
+			let badgeElem = new Elem("img")
+			badgeElem.setAttr("src", `${badge}.png`)
+			badgesCont.addChild(badgeElem)
+		})
+	} else {
+		noBadgesInd.style = ""
+		badgesCont.style = "grid-template-columns: 100%; grid-template-rows: 100%; align-items: center;"
+	}
 })
