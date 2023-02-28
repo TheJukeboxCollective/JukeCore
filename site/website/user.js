@@ -28,7 +28,7 @@ eventListen("userPageLoad", async () => {
 	userName.text = (userObjDB.name || userObjcord.username)
 
 	let userIcon = new Elem("user-icon")
-	userIcon.setAttr("src", userObjcord.displayAvatarURL)
+	userIcon.setAttr("src", userObjcord.displayAvatarURL+"?size=1024")
 
 	let jukesBalance = new Elem("balance-jukes")
 	let boxesBalance = new Elem("balance-boxes")
@@ -38,9 +38,13 @@ eventListen("userPageLoad", async () => {
 	//// No placings in the database yet really really
 
 	let channelName = new Elem("channel-name")
-	channelName.text = ("#"+PcObjcord.name)
-	channelName.href = `https://discord.com/channels/${JukeBot.guild}/${userObjDB.channel}`
-	channelName.setAttr("target", "_blank")
+	if (PcObjcord != null) {
+		channelName.text = ("#"+PcObjcord.name)
+		channelName.href = `https://discord.com/channels/${JukeBot.guild}/${userObjDB.channel}`
+		channelName.setAttr("target", "_blank")
+	} else {
+		channelName.text = ("No Personal Channel...")
+	}
 	// no channel likes yet either, you're so useless
 
 
