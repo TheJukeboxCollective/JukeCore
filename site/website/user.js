@@ -54,15 +54,12 @@ eventListen("userPageLoad", async () => {
 
 	document.title = `@${userName.text} 🎶 <JukeBox>`
 
-	let userBadges = new Elem("user-badges")
-	userBadges.text = `🎖️ Badges (${1})`
-
 	let badgesCont = new Elem("badges-cont")
 	let noBadgesInd = new Elem("no-badges")
 
 	// let badges = ["PKMN M&M 2022", "PKMN M&M 2022", "PKMN M&M 2022", "PKMN M&M 2022", "PKMN M&M 2022"]
 	let badges = await MemberDB.validBadges(userObjDB)
-	if (badges) {
+	if (badges.length > 0) {
 		noBadgesInd.style = "display: none;"
 		badges.forEach(badge => {
 			print(badge)
@@ -74,4 +71,7 @@ eventListen("userPageLoad", async () => {
 		noBadgesInd.style = ""
 		badgesCont.style = "grid-template-columns: 100%; grid-template-rows: 100%; align-items: center;"
 	}
+
+	let userBadges = new Elem("user-badges")
+	userBadges.text = `🎖️ Badges (${badges.length})`
 })

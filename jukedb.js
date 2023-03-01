@@ -429,7 +429,7 @@ MemberDB.validBadges = (obj) => {
         })
         return returnArr
     } else {
-        return null
+        return []
     }
 }
 
