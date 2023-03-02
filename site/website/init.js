@@ -11,15 +11,17 @@ var newPageFuncs = []
 
 const TO = (url, pageLoad, realUrl = url) => {
 	print(url)
-	socket.emit("PAGE", url)
-	if (url != window.location.pathname.slice(0, -1)) {
-		window.scrollTo(0, 0)
-		if (!pageLoad) { window.history.pushState({page: "newPage"}, "newPage", "/"+realUrl) }
-		newPageFuncs.forEach(func => { func() })
-		var pageName = window.location.pathname.split("/")[1]
-		pageName = (pageName[0].toUpperCase()) + (pageName.slice(1).toLowerCase())
-		document.title = `${pageName} 🎶 <JukeBox>`
-		print(document.title)
+	if (currPage != url) {
+		socket.emit("PAGE", url)
+		if (url != window.location.pathname.slice(0, -1)) {
+			window.scrollTo(0, 0)
+			if (!pageLoad) { window.history.pushState({page: "newPage"}, "newPage", "/"+realUrl) }
+			newPageFuncs.forEach(func => { func() })
+			var pageName = window.location.pathname.split("/")[1]
+			pageName = (pageName[0].toUpperCase()) + (pageName.slice(1).toLowerCase())
+			document.title = `${pageName} 🎶 <JukeBox>`
+			print(document.title)
+		}
 	}
 }
 
@@ -112,10 +114,10 @@ const SHORTENS = {
 function updateAnchors() {
 	Array.from(document.querySelectorAll('a')).forEach(elem => {
 		elem.onclick = e => {
+			e.preventDefault()
 			let elemURL = new URL(elem.href)
 			print(elemURL.host == window.location.host)
 			if (elemURL.host == window.location.host) {
-				e.preventDefault()
 				var dest = elem.href.split(window.location.host)[1]
 				let ind = 0
 				if (dest.startsWith("/")) {ind = 1}

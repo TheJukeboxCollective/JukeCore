@@ -54,8 +54,8 @@ function calcCellPos(ind) {
   let column = ind - (row*GRID.w)
   
   return {
-    x: ((row*(BADGE_SIZE.w+GRID.badge_space.x)) + GRID.margin.x) + GRID.x,
-    y: ((column*(BADGE_SIZE.h+GRID.badge_space.y)) + GRID.margin.y) + GRID.y
+    x: ((column*(BADGE_SIZE.w+GRID.badge_space.x)) + GRID.margin.x) + GRID.x,
+    y: ((row*(BADGE_SIZE.h+GRID.badge_space.y)) + GRID.margin.y) + GRID.y
   }
 }
 
@@ -140,9 +140,9 @@ async function make(client, userId) {
 	ctx.fillText(thisText, 388.12+((thisMaxWidth/2)-(thisWidth/2)), (562.67+(49.88/2)) )
 
 	// Placings
-	countText(randomInt(0, 25), 128, 767) // 1st
-	countText(randomInt(0, 25), 275, 767) // 2nd
-	countText(randomInt(0, 25), 426, 767) // 3rd
+	countText(userObjDB.golds, 128, 767) // 1st
+	countText(userObjDB.silvers, 275, 767) // 2nd
+	countText(userObjDB.bronzes, 426, 767) // 3rd
 	
 	// Personal Channel
 	if (PChannel) {
@@ -164,17 +164,22 @@ async function make(client, userId) {
 		ctx.fillText(thisText, 655, 749)
 	}
 
-	// Badges
 	let badgeProms = []
-	if (Object.values(userObjDB.badges).some(val => val == true)) {
-		Object.keys(userObjDB.badges).forEach((key, i) => {
+	// let badges = [
+	// 	"DEV", "PKMN M&M 2022",
+	// 	"PKMN M&M 2022", "DEV",
+	// 	"DEV", "PKMN M&M 2022",
+	// 	"PKMN M&M 2022", "DEV",
+	// 	"PKMN M&M 2022", "DEV",
+	// ]
+	let badges = await MemberDB.validBadges(userObjDB)
+	if (badges.length > 0) {
+		badges.forEach((badge, i) => {
 			var thisFunc = async () => {
-				if (userObjDB.badges[key] == true) {
-					let badgeImg = await loadImage(path.resolve(__dirname, `../../badges/${key}.png`))
-					let badgePos = calcCellPos(i)
-					ctx.drawImage(badgeImg, badgePos.x, badgePos.y)
-					return true
-				}
+				let badgeImg = await loadImage(path.resolve(__dirname, `../../badges/${badge}.png`))
+				let badgePos = calcCellPos(i)
+				ctx.drawImage(badgeImg, badgePos.x, badgePos.y)
+				return true
 			}
 			badgeProms.push(thisFunc())
 		})

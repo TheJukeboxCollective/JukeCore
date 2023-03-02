@@ -62,13 +62,14 @@ eventListen("userPageLoad", async () => {
 	let badgesCont = new Elem("badges-cont")
 	let noBadgesInd = new Elem("no-badges")
 
-	let badges = [
-		"PKMN M&M 2022", "DEV", 
-		"PKMN M&M 2022", "DEV", 
-		"PKMN M&M 2022", "DEV", 
-		"PKMN M&M 2022", "DEV", 
-	]
-	// let badges = await MemberDB.validBadges(userObjDB)
+	// let badges = [
+	// 	"PKMN M&M 2022", "DEV", 
+	// 	"PKMN M&M 2022", "DEV", 
+	// 	"PKMN M&M 2022", "DEV", 
+	// 	"PKMN M&M 2022", "DEV", 
+	// 	"PKMN M&M 2022", "DEV", 
+	// ]
+	let badges = await MemberDB.validBadges(userObjDB)
 	if (badges.length > 0) {
 		noBadgesInd.style = "display: none;"
 		badges.forEach(badge => {
