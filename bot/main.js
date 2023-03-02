@@ -1,6 +1,5 @@
 const print = console.log
 const fs = require('node:fs')
-require('dotenv').config({ path: `${__dirname}/.env` })
 
 const token = process.env['token']
 const GUILD_ID = process.env['guild']

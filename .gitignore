@@ -1,5 +1,5 @@
 node_modules/
 serverdir/
 package-lock.json
-.env
+.sec
 credentials.json

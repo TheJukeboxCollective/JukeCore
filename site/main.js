@@ -1,5 +1,6 @@
 const print = console.log
 
+require('dotenv').config({ path: `${__dirname}/.sec` })
 require('dotenv').config({ path: `${__dirname}/.env` })
 const path = require('path')
 var request = require('sync-request')
