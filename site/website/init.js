@@ -3,6 +3,7 @@
 var socket = io()
 var localStorage = window.localStorage
 
+var currPage;
 var newPageFuncs = []
 
 //// Utility Functions

@@ -17,7 +17,6 @@
 		width: 480px;
 		height: 150px;
 		margin: 0px;
-		margin-top: 15px;
 		color: white;
 		align-items: center;
 	}
@@ -71,7 +70,7 @@
 	    /* width: 100%; */
 	    /* height: 450px; */
 	    width: calc(100% - (var(--gyap) * 2));
-	    height: calc(400px - (var(--gyap) * 2));
+	    height: calc(450px - (var(--gyap) * 2));
 	    border-radius: 15px;
 	    grid-template-columns: 50% 50%;
 	    justify-items: center;
@@ -80,9 +79,9 @@
 	}
 
 	#user-badges {
-	    display: grid;
+	    display: flex;
 	    font-family: 'Big Card';
-	    font-size: 64px;
+	    font-size: 60px;
 	    color: #ffffff75;
 	    margin: 0px;
 	    margin-top: 64px;
@@ -92,14 +91,117 @@
 	}
 
 	#user-badges > img {
-		width: 1.5em;
-		height: 1.5em;
+		width: 1.15em;
+		height: 1.15em;
+		margin: 0px;
 	}
 
 	#no-badges {
 		font-family: Big Card;
 		font-size: 64px;
 		color: #151515ac;
+	}
+
+	#channel-cont {
+		font-family: Big Card;
+		font-size: 42px;
+		display: flex;
+		width: 100%;
+		height: 1.5em;
+		align-items: center;
+		margin-top: 10px;
+		justify-content: space-between;
+	}
+
+	#channel-name {
+		display: flex;
+		align-items: center;
+		color: #ffffff;
+	}
+
+	#channel-name[no_channel] {
+		color: #ffffff75;
+	}
+
+	#channel-name > img:first-of-type {
+		width: 1.5em;
+		height: 1.5em;
+		margin-right: 20px;
+	}
+
+	#channel-likes {width: min-content}
+
+	#channel-likes > img {
+		width: 1.5em;
+		height: 1.5em;
+		margin-right: 20px;
+	}
+
+	#placings-header {
+		font-family: Big Card;
+		font-size: 48px;
+		color: #ffffff7c;
+		margin: 0px;
+		margin-top: 20px;
+	}
+
+	#placings-cont {
+		display: flex;
+		width: 380px;
+		justify-content: space-between;
+	}
+
+	#placings-cont > p {
+		font-size: 72px;
+		position: min-content;
+		margin: 0px;
+		top: -40px;
+		position: relative;
+	}
+
+	.counter:before {
+		font-family: Mid Card;
+		font-size: 40px;
+		position: relative;
+	    text-align: left;
+		top: 86px;
+		left: -10px;
+		float: right;
+		content: "x"attr(count);
+	    -webkit-text-stroke: 15px #151515;
+/*	    -webkit-text-stroke: 10px black;*/
+	    -webkit-text-fill-color: white;
+	}
+
+	.counter:after {
+		font-family: Mid Card;
+		font-size: 40px;
+		position: relative;
+		text-align: left;
+		top: -30px;
+		left: -10px;
+		float: right;
+		content: "x"attr(count);
+/*	    -webkit-text-stroke: 7px #151515;*/
+/*	    -webkit-text-fill-color: white;*/
+	}
+
+	#channel-likes:before {
+		top: 78px;
+		left: 11px;
+	}
+
+	#channel-likes:after {
+		top: -30px;
+		left: 10px;
+	}
+
+	#placings-silvers:before {
+		left: -20px;
+	}
+
+	#placings-silvers:after {
+		left: -20px;
 	}
 </style>
 
@@ -115,10 +217,11 @@
 				<img src="boxCoin.svg"/> <p id="balance-boxes"></p>
 			</div>
 		</div>
+		<p id="placings-header">Placings:</p>
 		<div id="placings-cont">
-			<p id="placings-golds"></p>
-			<p id="placings-silvers"></p>
-			<p id="placings-bronzes"></p>
+			<p count=10 class="counter" id="placings-golds">🥇</p>
+			<p count="1,000" class="counter" id="placings-silvers">🥈</p>
+			<p count=100 class="counter" id="placings-bronzes">🥉</p>
 		</div>
 	</div>
 	<div id="right-card">
@@ -128,7 +231,7 @@
 		</div>
 		<div id="channel-cont">
 			<a id="channel-name"></a>
-			<p id="channel-likes"></p>
+			<p count=1 class="counter" id="channel-likes">❤</p>
 		</div>
 	</div>
 </div>

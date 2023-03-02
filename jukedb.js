@@ -24,6 +24,9 @@ const schemas = {
         {type: "String", default: null}, // channel_id
         {type: "Badges", default: null}, // badges
         {type: "Boolean", default: false}, // jukeboxer
+        {type: "Number", default: 0}, // golds
+        {type: "Number", default: 0}, // silvers
+        {type: "Number", default: 0}, // bronzes
     ],
     channels: [
         {type: "String", default: null}, // channel_id

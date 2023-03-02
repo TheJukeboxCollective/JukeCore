@@ -55,5 +55,8 @@ socket.on("PAGE", async (page, format, args) => {
 	}
 
 	// I need the loading page pack
-	eventFire(page+"PageLoad")
+	if (currPage != page) {
+		currPage = page
+		eventFire(page+"PageLoad")
+	}
 })

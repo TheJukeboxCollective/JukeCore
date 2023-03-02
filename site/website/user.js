@@ -39,15 +39,20 @@ eventListen("userPageLoad", async () => {
 	jukesBalance.text = userObjDB.jukes.toLocaleString("en-US")
 	boxesBalance.text = userObjDB.boxes.toLocaleString("en-US")
 
-	//// No placings in the database yet really really
+	let places = ["golds", "silvers", "bronzes"]
+	places.forEach(place => {
+		let placeElem = new Elem(`placings-${place}`)
+		placeElem.setAttr("count", userObjDB[place])
+	})
 
 	let channelName = new Elem("channel-name")
 	if (PcObjcord != null) {
-		channelName.text = ("#"+PcObjcord.name)
+		channelName.text = ("🖥 #"+PcObjcord.name)
 		channelName.href = `https://discord.com/channels/${JukeBot.guild}/${userObjDB.channel}`
 		channelName.setAttr("target", "_blank")
 	} else {
-		channelName.text = ("No Personal Channel...")
+		channelName.text = ("🖥 No Personal Channel...")
+		channelName.setAttr("no_channel", "")
 	}
 	// no channel likes yet either, you're so useless
 
@@ -57,8 +62,13 @@ eventListen("userPageLoad", async () => {
 	let badgesCont = new Elem("badges-cont")
 	let noBadgesInd = new Elem("no-badges")
 
-	// let badges = ["PKMN M&M 2022", "PKMN M&M 2022", "PKMN M&M 2022", "PKMN M&M 2022", "PKMN M&M 2022"]
-	let badges = await MemberDB.validBadges(userObjDB)
+	let badges = [
+		"PKMN M&M 2022", "DEV", 
+		"PKMN M&M 2022", "DEV", 
+		"PKMN M&M 2022", "DEV", 
+		"PKMN M&M 2022", "DEV", 
+	]
+	// let badges = await MemberDB.validBadges(userObjDB)
 	if (badges.length > 0) {
 		noBadgesInd.style = "display: none;"
 		badges.forEach(badge => {
