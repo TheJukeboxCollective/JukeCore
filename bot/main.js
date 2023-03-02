@@ -1,13 +1,24 @@
 const print = console.log
 const fs = require('node:fs')
 require('dotenv').config({ path: `${__dirname}/.env` })
+
 const token = process.env['token']
 const GUILD_ID = process.env['guild']
 const CLIENT_ID = process.env['client']
+
 const WELCOME_CHANNEL = process.env['wchl']
 const INFO_CHANNEL = process.env['ichl']
-const ROLES_CHANNEL = process.env['rchl']
 const WELCOME_EMOJI = process.env['emoji_w']
+
+const PC_CHANNEL = process.env['pc_chl']
+const PC_TOKEN_ROLE = process.env['pc_role']
+const JUKER_ROLE = process.env['juker_role']
+const ROLES_CHANNEL = process.env['rchl']
+
+const REACT_CHL = process.env['react_chl']
+const REACT_MSG = process.env['react_msg']
+const MUSICIAN_ROLE = process.env['musi_role']
+const SUBSCRIBER_ROLE = process.env['sub_role']
 
 const {MemberDB, ChannelDB} = require("../jukedb.js")
 
@@ -91,10 +102,51 @@ module.exports = client => {
     client.on("guildMemberAdd", async (member) => {
         let channel = await client.channels.fetch(WELCOME_CHANNEL)
         channel.send(`${WELCOME_EMOJI} **Welcome, <@${member.id}>, to TheJukeBox Music Community!** ${WELCOME_EMOJI}\n*(Check out <#${INFO_CHANNEL}> for more information, or get your roles in <#${ROLES_CHANNEL}>)*`)
+        member.roles.add(PC_TOKEN_ROLE)
+        member.roles.add(JUKER_ROLE)
     })
+
+    client.on("threadCreate", async (thread) => {
+        if (thread.parentId == PC_CHANNEL) {
+            let owner = await thread.guild.members.fetch(thread.ownerId)
+            // print(`Removing role ${PC_TOKEN_ROLE} from ${owner.displayName}...`)
+            owner.roles.remove(PC_TOKEN_ROLE)
+        }
+    })
+
+    function reactionRoleUpdate() {
+        //// REACTION ROLE INTEGRATION
+        client.channels.fetch(REACT_CHL).then(channel => { // CACHE REACTION ROLE MESSAGE
+            channel.messages.fetch(REACT_MSG, {cache: true})
+        })
+
+        const REACTION_ROLES = {
+            "🔴": SUBSCRIBER_ROLE,
+            "🔵": MUSICIAN_ROLE,
+        }
+
+        client.on('messageReactionAdd', async (reaction, user) => { // Adding Reaction Roles
+            if (reaction.message.id == REACT_MSG) {
+                let member = await reaction.message.guild.members.fetch(user.id)
+                if (Object.keys(REACTION_ROLES).includes(reaction.emoji.name)) {
+                    member.roles.add(REACTION_ROLES[reaction.emoji.name])
+                }
+            }
+        })
+
+        client.on('messageReactionRemove', async (reaction, user) => { // Removing Reaction Roles
+            if (reaction.message.id == REACT_MSG) {
+                let member = await reaction.message.guild.members.fetch(user.id)
+                if (Object.keys(REACTION_ROLES).includes(reaction.emoji.name)) {
+                    member.roles.remove(REACTION_ROLES[reaction.emoji.name])
+                }
+            }
+        })
+    }
 
     client.on("ready", async () => {
         print(`${client.user.username} Initialized!`)
+        reactionRoleUpdate()
     })
 
     client.on("messageCreate", msg => {
