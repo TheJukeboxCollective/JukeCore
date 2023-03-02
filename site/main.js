@@ -1,7 +1,8 @@
 const print = console.log
 
-require('dotenv').config({ path: `${__dirname}/.sec` })
-require('dotenv').config({ path: `${__dirname}/.env` })
+var dotenv = require('dotenv')
+dotenv.config({ path: `${__dirname}/.env.secrets` })
+dotenv.config({ path: `${__dirname}/.env` })
 const path = require('path')
 var request = require('sync-request')
 var moment = require('moment')
