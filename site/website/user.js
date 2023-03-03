@@ -47,8 +47,8 @@ eventListen("userPageLoad", async () => {
 
 	let channelName = new Elem("channel-name")
 	if (PcObjcord != null) {
-		channelName.text = ("🖥 #"+PcObjcord.name)
-		channelName.href = `https://discord.com/channels/${JukeBot.guild}/${userObjDB.channel}`
+		channelName.text = ("🖥 "+PcObjcord.name)
+		channelName.href = `https://discord.com/channels/${JukeBot.guild}/${ENV["pc_chl"]}/threads/${userObjDB.channel}`
 		channelName.setAttr("target", "_blank")
 	} else {
 		channelName.text = ("🖥 No Personal Channel...")

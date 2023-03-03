@@ -1,8 +1,5 @@
 const print = console.log
 
-var dotenv = require('dotenv')
-dotenv.config({ path: `${__dirname}/.env.secrets` })
-dotenv.config({ path: `${__dirname}/.env` })
 const path = require('path')
 var request = require('sync-request')
 var moment = require('moment')
@@ -244,6 +241,16 @@ module.exports = (client) => {
       })
     })
     socket.emit("jukedb_info", infoDBs)
+
+    const public_envs = ["pc_chl"]
+    var thing_envs = []
+    public_envs.forEach(env => {
+      thing_envs.push({
+        key: env,
+        value: process.env[env],
+      })
+    })
+    socket.emit("envs", thing_envs)
 
     socket.on("upload", async (folder, filename, event, callback) => {
       var thisPath = `serverdir/${folder}/${filename}` 

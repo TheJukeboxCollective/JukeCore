@@ -1,3 +1,5 @@
+require('dotenv').config({ path: `${__dirname}/.env` })
+
 const print = console.log
 const fs = require('node:fs')
 const token = process.env['token']

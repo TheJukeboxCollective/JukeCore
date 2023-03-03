@@ -110,6 +110,9 @@ module.exports = client => {
             let owner = await thread.guild.members.fetch(thread.ownerId)
             // print(`Removing role ${PC_TOKEN_ROLE} from ${owner.displayName}...`)
             owner.roles.remove(PC_TOKEN_ROLE)
+            MemberDB.setUp(owner.id, {
+                channel: thread.id
+            })
         }
     })
 

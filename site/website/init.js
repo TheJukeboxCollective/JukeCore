@@ -162,6 +162,14 @@ socket.on("jukedb_info", DBs => {
 	})
 })
 
+var ENV = {}
+
+socket.on("envs", envs => {
+	envs.forEach(env => {
+		ENV[env.key] = env.value
+	})
+})
+
 new Array("collective", "community").forEach(type => {
 	print(type)
 	var dropDown = new Elem(document.querySelector(`.drop-down[${type}]`))
