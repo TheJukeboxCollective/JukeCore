@@ -50,11 +50,12 @@ eventListen("userPageLoad", async () => {
 		channelName.text = ("🖥 "+PcObjcord.name)
 		channelName.href = `https://discord.com/channels/${JukeBot.guild}/${ENV["pc_chl"]}/threads/${userObjDB.channel}`
 		channelName.setAttr("target", "_blank")
+		let channelLikes = new Elem("channel-likes")
+		channelLikes.setAttr("count", await JukeBot.PClikes(userObjDB.channel))
 	} else {
 		channelName.text = ("🖥 No Personal Channel...")
 		channelName.setAttr("no_channel", "")
 	}
-	// no channel likes yet either, you're so useless
 
 
 	document.title = `@${userName.text} 🎶 <JukeBox>`

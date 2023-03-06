@@ -148,12 +148,12 @@ async function make(client, userId) {
 	if (PChannel) {
 		ctx.font = `40px "Big Card"`
 		ctx.textBaseline = "middle"
-		thisText = ("#"+PChannel.name)
+		thisText = (PChannel.name)
 		ctx.fillStyle = "white"
 		ctx.fillText(thisText, 655, 749)
 
 		let LikeIconImg = await loadImage(DIR+DA+"likeIcon.png")
-		ctx.drawImage(LikeIconImg, 1202, 704)
+		ctx.drawImage(LikeIconImg, 1202, 704, 76, 76)
 
 		countText(randomInt(0, 25), 1240, 763)
 	} else {

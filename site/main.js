@@ -18,6 +18,8 @@ const JukeDB = require("../jukedb.js")
 const websitePath = path.resolve(__dirname, 'website')
 const badgePath = path.resolve(__dirname, '../badges')
 
+const LIKE_EMOTE = process.env['emoji_l']
+
 //// Page Handling ////
 
 const PAGES = {
@@ -206,16 +208,52 @@ module.exports = (client) => {
       }
     })
 
-    var bot_methods = ["user", "channel", ["guild", process.env['guild']]]
+    const serialize = obj => {
+      var replacer = (key, value) => {
+        var cache = []
+        if (key == "") {
+          return value
+        } else {
+          var valueType = typeof value
+          if (valueType == "object" && value != null) {
+            if (cache.includes(value)) { return "[circular]" }
+            cache.push(value)
+            return JSON.parse(JSON.stringify(value, replacer))
+          } else {
+            return value
+          }
+        }
+      }
+      var preRes = JSON.stringify(obj, replacer, "\t")
+      return JSON.parse(preRes)
+    }
+
+    var bot_methods = ["user", "channel", "message", "PClikes", ["guild", process.env['guild']]]
     socket.on("jukebot", async (method, args, callback) => {
       switch (method) {
         case 'user':
-          let user = await client.users.fetch(args[0])
-          callback(user)
+          var user = await client.users.fetch(args[0])
+          callback(serialize(user))
         break;
         case 'channel':
-          let channel = await client.channels.fetch(args[0])
-          callback(channel)
+          var channel = await client.channels.fetch(args[0])
+          callback(serialize(channel))
+        break;
+        case 'message':
+          var channel = await client.channels.fetch(args[0])
+          var message = await channel.messages.fetch(args[1])
+          callback(serialize(message), serialize(channel))
+        break;
+        case 'PClikes':
+          var channel = await client.channels.fetch(args[0])
+          var message = await channel.messages.fetch(args[0])
+          var reactions = message.reactions.cache
+          // print(reactions)
+          var reaction = reactions.find(react => {
+            // print(react.emoji.id, LIKE_EMOTE)
+            return (`<:${react.emoji.name}:${react.emoji.id}>` == LIKE_EMOTE)
+          })
+          callback(reaction ? reaction.count : 0)
         break;
       }
     })
