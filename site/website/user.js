@@ -34,6 +34,14 @@ eventListen("userPageLoad", async () => {
 	let userIcon = new Elem("user-icon")
 	userIcon.setAttr("src", userObjcord.displayAvatarURL+"?size=1024")
 
+	const TIERS = [null, "SuperJuker", "Boxee", "JukeBoxer", "ArchJuke"]
+	var thisTier = TIERS[userObjDB.tier]
+	if (thisTier != null) {
+		let userEmblem = new Elem("user-emblem")
+		userEmblem.setAttr("src", `emblems/${thisTier}.svg`)
+		userEmblem.setAttr("style", ``)
+	}
+
 	let jukesBalance = new Elem("balance-jukes")
 	let boxesBalance = new Elem("balance-boxes")
 	jukesBalance.text = userObjDB.jukes.toLocaleString("en-US")
