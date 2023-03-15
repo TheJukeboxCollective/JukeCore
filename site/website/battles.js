@@ -1,3 +1,13 @@
+/// Script refactor: Make it await all required promise info at beginning then 
+/// before running the rest of logic, check to see if the current page is still the same as before
+/* Example:
+info = await Promise.all(info)
+
+if (currPage == "battle") {
+	...
+}
+*/
+
 eventListen("battlesPageLoad", async () => {
 	// Load Battles
 	var battlesCont = new Elem("battles-cont")

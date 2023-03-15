@@ -14,6 +14,7 @@ const io = new Server(httpserver, {
 });
 
 const JukeDB = require("../jukedb.js")
+const JukeUtils = require("../jukeutils.js")
 
 const websitePath = path.resolve(__dirname, 'website')
 const badgePath = path.resolve(__dirname, '../badges')
@@ -172,7 +173,7 @@ module.exports = (client) => {
         })
 
         let pageData = res.getBody('utf-8')
-        print(pageData)
+        // print(pageData)
 
         socket.emit('userAccessInfo', JSON.parse(pageData))
       } catch (err) {
@@ -333,24 +334,34 @@ module.exports = (client) => {
     })
     socket.emit("envs", thing_envs)
 
-    socket.on("upload", async (folder, filename, event, callback) => {
-      var thisPath = `serverdir/${folder}/${filename}` 
+    var activeUploads = {}
+    // uploadId = 0
+    socket.on("uploadSong", async (battleId, songId, filename, event, callback) => {
+      var {ext} = activeUploads[songId]
+      var thisPath = `serverdir/${battleId}/${songId}.${ext}`
       switch (event.type) {
         case "start":
-          var exists = await fs.pathExists(thisPath)
-          if (exists) {
-            await fs.remove(thisPath)
+          var {SongDB} = JukeDB
+          songId = JukeUtils.validID(SongDB)
+          SongDB.setUp(songId, {
+            filename: filename,
+            battleID: battleID
+          })
+          var bits = filename.split(".")
+          activeUploads[songId] = {
+            ext: bits[bits.length-1]
           }
+          callback(sondId)
         break;
         case "data":
           await fs.appendFile(thisPath, event.data)
+          callback()
         break;
         case "done":
-          print("Upload complete.")
+          await fs.move(thisPath, ``)
+          callback()
         break;
       }
-
-      callback()
     })
   })
 
