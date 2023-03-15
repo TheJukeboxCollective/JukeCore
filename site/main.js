@@ -163,17 +163,23 @@ module.exports = (client) => {
 
       var bits = new URLSearchParams(Object.entries(data)).toString()
 
-      let res = request("POST", `https://discord.com/api/v9/oauth2/token`, {
-        body: bits,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+      try {
+        let res = request("POST", `https://discord.com/api/v9/oauth2/token`, {
+          body: bits,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        })
+
+        let pageData = res.getBody('utf-8')
+        print(pageData)
+
+        socket.emit('userAccessInfo', JSON.parse(pageData))
+      } catch (err) {
+        if (err) {
+          socket.emit('userAccessInfo', "That shit don't exist >:|")
         }
-      })
-
-      let pageData = res.getBody('utf-8')
-      print(pageData)
-
-      socket.emit('userAccessInfo', JSON.parse(pageData))
+      }
     })
 
     socket.on('userObj', (access_token, callback) => {
@@ -186,10 +192,15 @@ module.exports = (client) => {
       callback(JSON.parse(res.getBody("utf-8")))
     })
 
-    socket.on("discord", (access_token, method, path, data, callback) => {
-      let res = request(method.toUpperCase(), `https://discord.com/api/v9/${path}`, {
+    const DISCORD_API = `https://discord.com/api/v9`
+
+    socket.on("joinUser", (userId, access_token, callback) => {
+      let res = request("PUT", `${DISCORD_API}/guilds/${process.env['guild']}/members/${userId}`, {
         headers: {
-          Authorization: `Bearer ${access_token}`
+          Authorization: `Bot ${process.env["token"]}`
+        },
+        json: {
+          access_token: access_token
         }
       })
 
@@ -199,6 +210,38 @@ module.exports = (client) => {
         resText = res.getBody("utf-8")
       } catch (err) {
         resText = err  
+        print(resText)
+      }
+
+      if (typeof resText == "string") {
+        callback(JSON.parse(resText))
+      } else {
+        callback(null)
+      }
+    })
+
+    socket.on("discord", (access_token, method, path, data, callback) => {
+      let opts = {
+        headers: {
+          Authorization: `Bearer ${access_token}`
+        }
+      }
+
+      if (data) {
+        opts["json"] = data
+      }
+
+      print(opts)
+
+      let res = request(method.toUpperCase(), `${DISCORD_API}/${path}`, opts)
+
+      var resText;
+
+      try {
+        resText = res.getBody("utf-8")
+      } catch (err) {
+        resText = err  
+        print(resText)
       }
 
       if (typeof resText == "string") {
@@ -280,7 +323,7 @@ module.exports = (client) => {
     })
     socket.emit("jukedb_info", infoDBs)
 
-    const public_envs = ["pc_chl"]
+    const public_envs = ["guild", "pc_chl"]
     var thing_envs = []
     public_envs.forEach(env => {
       thing_envs.push({

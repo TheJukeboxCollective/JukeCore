@@ -4,8 +4,16 @@ const OAUTH_LINK = `https://discord.com/api/oauth2/authorize?client_id=106598797
 var profileStatus = new Elem("login-status")
 
 async function loggedIn() {
-	let userObj = await Discord("get", "users/@me")
-	if (userObj != null) {
+	var access_token = JSON.parse(localStorage.getItem("access")).access_token
+	let proms = await Promise.all([
+		Discord("get", "users/@me/guilds"),
+		Discord("get", "users/@me")
+	])
+	let guilds = proms[0]
+	let userObj = proms[1]
+	// print(guilds, userObj)
+	guilds = (guilds != null ? guilds.map(guild=>guild.id) : null)
+    if (guilds != null && guilds.includes(ENV.guild)) {
 		let userObjDB = await JukeDB.MemberDB.get(userObj.id)
 		profileStatus.html = `Logged in as<br><a style="color: #ffffff;">${(userObjDB.name || userObj.username)}</a>`
 		profileStatus.children[1].href = `/user/${userObj.id}`
@@ -13,15 +21,19 @@ async function loggedIn() {
 			e.preventDefault()
 			switchTo(`user`, false, `/user/${userObj.id}`)
 		})
-	} else {
-		loggedOut()
-	}
+    } else if (guilds != null && !guilds.includes(ENV.guild)) {
+    	print(`attempting "guilds/${ENV.guild}/members/${userObj.id}"...`)
+    	let res = await socket.emitWithAck("joinUser", userObj.id, access_token)
+    	loggedIn()
+    } else {
+    	loggedOut()
+    }
 }
 
 function loggedOut() {
-	localStorage.setItem("access", "")
+	localStorage.removeItem("access")
 	profileStatus.html = "<a>Login in with Discord</a>"
-	profileStatus.children[0].href = OAUTH_LINK	
+	profileStatus.children[0].href = OAUTH_LINK
 }
 
 if (localStorage.getItem("access") != null) {
@@ -35,9 +47,12 @@ if (code != null && window.location.pathname.split("/").join("") == "home") {
 	socket.emit("code", code)
 
 	socket.on("userAccessInfo", async info => {
-		localStorage.setItem("access", JSON.stringify(info))
-
-		loggedIn()
+		if (info != "That shit don't exist >:|") {
+			localStorage.setItem("access", JSON.stringify(info))
+			loggedIn()
+		} else {
+			print(info)
+		}
 	})
 }
 })();

@@ -10,7 +10,7 @@ var newPageFuncs = []
 
 
 const TO = (url, pageLoad, realUrl = url) => {
-	print(url)
+	// print(url)
 	if (currPage != url) {
 		socket.emit("PAGE", url)
 		if (url != window.location.pathname.slice(0, -1)) {
@@ -20,7 +20,7 @@ const TO = (url, pageLoad, realUrl = url) => {
 			var pageName = window.location.pathname.split("/")[1]
 			pageName = (pageName[0].toUpperCase()) + (pageName.slice(1).toLowerCase())
 			document.title = `${pageName} 🎶 <JukeBox>`
-			print(document.title)
+			// print(document.title)
 		}
 	}
 }
@@ -171,7 +171,7 @@ socket.on("envs", envs => {
 })
 
 new Array("collective", "community").forEach(type => {
-	print(type)
+	// print(type)
 	var dropDown = new Elem(document.querySelector(`.drop-down[${type}]`))
 
 	dropDown.style.setProperty("--drop-down-height", `${dropDown.height}px`)

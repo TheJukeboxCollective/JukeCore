@@ -22,7 +22,7 @@ eventListen("userPageLoad", async () => {
 		PcObjcord = res[1]
 	}
 
-	print(userObjDB, userObjcord)
+	// print(userObjDB, userObjcord)
 
 	let userName = new Elem("user-name")
 	userName.text = (userObjDB.name || userObjcord.username)
