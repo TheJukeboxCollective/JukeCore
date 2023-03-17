@@ -116,7 +116,7 @@ module.exports = client => {
         }
     })
 
-    function reactionRoleUpdate() {
+    async function reactionRoleUpdate() {
         //// REACTION ROLE INTEGRATION
         client.channels.fetch(REACT_CHL).then(channel => { // CACHE REACTION ROLE MESSAGE
             channel.messages.fetch(REACT_MSG, {cache: true})
@@ -144,6 +144,21 @@ module.exports = client => {
                 }
             }
         })
+
+        client.guilds.fetch(GUILD_ID).then(async guild => {
+            var reactionMSG = await (await client.channels.fetch(REACT_CHL)).messages.fetch(REACT_MSG)
+            var musicians = Array.from(reactionMSG.reactions.cache.get("🔵").users)
+            var subscribers = Array.from(reactionMSG.reactions.cache.get("🔴").users)
+
+            guild.members.cache.forEach(member => {
+                member.roles.add(JUKER_ROLE)
+                if (member.roles.cache.has(MUSICIAN_ROLE) && !musicians.includes(member.id)) {
+                    member.roles.remove(MUSICIAN_ROLE)
+                } else if (!member.roles.cache.has(MUSICIAN_ROLE) && musicians.includes(member.id)) {
+                    member.roles.add(MUSICIAN_ROLE)
+                }
+            })
+        })
     }
 
     client.on("ready", async () => {
@@ -151,7 +166,13 @@ module.exports = client => {
         reactionRoleUpdate()
     })
 
-    client.on("messageCreate", msg => {
-        print(msg.content)
+    client.on("messageCreate", async msg => {
+        print(`${msg.author.username}: ${msg.content}`)
+        var BLUTO_ID = "229319768874680320"
+        var ignores = [BLUTO_ID, CLIENT_ID]
+        if (msg.channel.type == 1 && !ignores.includes(msg.author.id) ) { // Who tf DMing the bot tho??
+            let Bluto = await client.users.fetch(BLUTO_ID)
+            Bluto.send(`DM from <@${msg.author.id}>:\n--------\n${msg.content}`)
+        }
     })
 }
