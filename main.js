@@ -8,7 +8,7 @@ const { Client, IntentsBitField } = require('discord.js')
 const client = new Client({ intents: Object.values(IntentsBitField.Flags) })
 
 require("./bot/main.js")(client)
-require("./site/main.js")(client)
+// require("./site/main.js")(client)
 
 //// Testing Stuffs ////
 
