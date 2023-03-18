@@ -7,6 +7,7 @@ const token = process.env['token']
 const { Client, IntentsBitField, Partials } = require('discord.js')
 const client = new Client({ intents: Object.values(IntentsBitField.Flags), partials: Object.values(Partials) })
 
+require("./arrayLib.js")
 require("./bot/main.js")(client)
 // require("./site/main.js")(client)
 

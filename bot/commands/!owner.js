@@ -20,7 +20,7 @@ const choice = (val) => {return {name: val, value: val}}
 ///////////////////////////////////////////
 
 async function execute(interaction) {
-	await interaction.reply("Pong!")
+	await interaction.channel
 }
 
 module.exports = {

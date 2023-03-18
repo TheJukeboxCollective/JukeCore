@@ -26,14 +26,22 @@ async function execute(interaction) {
 	await interaction.deferReply()
 	let member = interaction.options.get("member")
 	let user = (member ? member.user : interaction.user )
-	// let userDB = await MemberDB.get(user.id)
-	// let res = [userDB.jukes, userDB.boxes]
-	// await interaction.editReply(`__**${user.username}**'s Balance:__\n\n${JukeUtils.coinToEmote("jukes")} Jukes: **\`\`${res[0]}\`\`** ${JukeUtils.coinToEmote("jukes")}\n${JukeUtils.coinToEmote("boxes")} Boxes: **\`\`${res[1]}\`\`** ${JukeUtils.coinToEmote("boxes")}`)
 
-	var buf = await UserCard(interaction.client, user.id)
-	const attachment = new AttachmentBuilder(buf, { name: 'jukebox-user-card.png' })
+	if (user.bot) {
+		let msg = await interaction.editReply({content: `**‼ ${user.username} is a bot ‼**`})
+		setTimeout(() => {
+			msg.delete()
+		}, 3000)
+	} else {
+		// let userDB = await MemberDB.get(user.id)
+		// let res = [userDB.jukes, userDB.boxes]
+		// await interaction.editReply(`__**${user.username}**'s Balance:__\n\n${JukeUtils.coinToEmote("jukes")} Jukes: **\`\`${res[0]}\`\`** ${JukeUtils.coinToEmote("jukes")}\n${JukeUtils.coinToEmote("boxes")} Boxes: **\`\`${res[1]}\`\`** ${JukeUtils.coinToEmote("boxes")}`)
 
-	await interaction.editReply({content: `__**${user.username}**'s Card:__`, files: [attachment]})
+		var buf = await UserCard(interaction.client, user.id)
+		const attachment = new AttachmentBuilder(buf, { name: 'jukebox-user-card.png' })
+
+		await interaction.editReply({content: `__**${user.username}**'s Card:__`, files: [attachment]})
+	}
 }
 
 module.exports = {

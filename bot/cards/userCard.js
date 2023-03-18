@@ -194,10 +194,10 @@ async function make(client, userId) {
 		ctx.fillText(thisText, 727+((thisMaxWidth/2)-(thisWidth/2)), (395+(98/2)) )
 	}
 
-	// Jukeboxer Mark
-	if (userObjDB.jukeboxer) {
-		let JukeBoxerIcon = await loadImage(DIR+DA+"jukeboxerMark.png")
-		ctx.drawImage(JukeBoxerIcon, 331, 277)
+	// Tier Emblem
+	if (userObjDB.tier > 0) {
+		let tierEmblem = await loadImage(DIR+DA+`emblem${userObjDB.tier}.png`)
+		ctx.drawImage(tierEmblem, 331, 277, 141, 141)
 	}
 
 	ctx.quality = "best"

@@ -14,6 +14,11 @@ const PC_TOKEN_ROLE = process.env['pc_role']
 const JUKER_ROLE = process.env['juker_role']
 const ROLES_CHANNEL = process.env['rchl']
 
+const SUPER_JUKER_ROLE = process.env['super_juker_role']
+const BOXEE_ROLE = process.env['boxee_role']
+const JUKEBOXER_ROLE = process.env['jukeboxer_role']
+const ARCHJUKER_ROLE = process.env['archjuker_role']
+
 const REACT_CHL = process.env['react_chl']
 const REACT_MSG = process.env['react_msg']
 const MUSICIAN_ROLE = process.env['musi_role']
@@ -116,7 +121,7 @@ module.exports = client => {
         }
     })
 
-    async function reactionRoleUpdate() {
+    async function reactionRoleUpdate(guild) {
         //// REACTION ROLE INTEGRATION
         client.channels.fetch(REACT_CHL).then(channel => { // CACHE REACTION ROLE MESSAGE
             channel.messages.fetch(REACT_MSG, {cache: true})
@@ -145,25 +150,89 @@ module.exports = client => {
             }
         })
 
-        client.guilds.fetch(GUILD_ID).then(async guild => {
-            var reactionMSG = await (await client.channels.fetch(REACT_CHL)).messages.fetch(REACT_MSG)
-            var musicians = Array.from(reactionMSG.reactions.cache.get("🔵").users)
-            var subscribers = Array.from(reactionMSG.reactions.cache.get("🔴").users)
+        var reactionMSG = await (await client.channels.fetch(REACT_CHL)).messages.fetch(REACT_MSG)
+        var actualLists = {}
+        await Object.keys(REACTION_ROLES).asyncForEach(async emote => {
+            // print(emote)
+            actualLists[emote] = Array.from((await reactionMSG.reactions.cache.get(emote).users.fetch()).keys())
+        })
 
-            guild.members.cache.forEach(member => {
-                member.roles.add(JUKER_ROLE)
-                if (member.roles.cache.has(MUSICIAN_ROLE) && !musicians.includes(member.id)) {
-                    member.roles.remove(MUSICIAN_ROLE)
-                } else if (!member.roles.cache.has(MUSICIAN_ROLE) && musicians.includes(member.id)) {
-                    member.roles.add(MUSICIAN_ROLE)
+        Array.from(guild.members.cache.values()).asyncForEach(async member => {
+            await member.roles.add(JUKER_ROLE)
+
+            await Object.keys(REACTION_ROLES).asyncForEach(async emote => {
+                var thisRole = REACTION_ROLES[emote]
+                var thisList = actualLists[emote]
+                if (member.roles.cache.has(thisRole) && !thisList.includes(member.id)) {
+                    await member.roles.remove(thisRole)
+                } else if (!member.roles.cache.has(thisRole) && thisList.includes(member.id)) {
+                    await member.roles.add(thisRole)
                 }
             })
         })
+
+        print("- Reaction roles updated!")
+    }
+
+    async function updateBadgesAndTiers(guild) {
+        async function memberUpdater(member) {
+            var thisProm;
+
+            const TIER_ROLES = [
+                ARCHJUKER_ROLE,     // 5 - 1 == 4
+                JUKEBOXER_ROLE,     // 5 - 2 == 3
+                BOXEE_ROLE,         // 5 - 3 == 2
+                SUPER_JUKER_ROLE,   // 5 - 4 == 1
+                JUKER_ROLE,         // 5 - 5 == 0
+            ]
+
+            // TIER_ROLES.forEach((roleId, ind) => {
+            for (let ind = 0; ind < TIER_ROLES.length; ind++) {
+                let roleId = TIER_ROLES[ind]
+                if (member.roles.cache.has(roleId)) {
+                    thisProm = MemberDB.set(member.id, "tier", (TIER_ROLES.length-(ind+1)))
+                    break;
+                }
+            }
+
+            await thisProm
+        }
+
+        await Array.from(guild.members.cache.values()).asyncForEach(memberUpdater)
+
+        client.on("guildMemberUpdate", async (oldMember, newMember) => { memberUpdater(newMember) })
+
+        print("- Tiers & Badges sync'd!")
+    }
+
+    async function updateTokens(guild) {
+        var forumChannel = await client.channels.fetch(PC_CHANNEL)
+        var pcOwners = Array.from(forumChannel.threads.cache.values()).map(PC => { return PC.ownerId })
+        await Array.from(guild.members.cache.values()).asyncForEach(async member => {
+            if (!pcOwners.includes(member.id)) {
+                await member.roles.add(PC_TOKEN_ROLE)
+                // print(`${member.user.username} Does not own a PC`)
+            } else {
+                await member.roles.remove(PC_TOKEN_ROLE)
+                // print(`${member.user.username} OWNS A PC, WTFF`)
+            }
+        })
+        print("- PC Tokens updated!")
     }
 
     client.on("ready", async () => {
+        print(`Bot Logged in...`)
+
+        let guild = await client.guilds.fetch(GUILD_ID)
+        let theseProms = [
+            reactionRoleUpdate(guild),
+            updateBadgesAndTiers(guild),
+            updateTokens(guild),
+        ]
+
+        await Promise.all(theseProms)
+
         print(`${client.user.username} Initialized!`)
-        reactionRoleUpdate()
     })
 
     client.on("messageCreate", async msg => {
