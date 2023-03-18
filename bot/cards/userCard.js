@@ -77,7 +77,7 @@ async function make(client, userId) {
 	var userObjDB = await MemberDB.get(userId)
 	var PChannel = (userObjDB.channel ? await client.channels.fetch(userObjDB.channel) : null)
 
-	var COLOR = "#024aca"
+	var COLOR = "#7E2AD1"
 
 	//// Background Box
 	ctx.fillStyle = COLOR
