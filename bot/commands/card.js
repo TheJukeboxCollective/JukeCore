@@ -26,6 +26,7 @@ command.addUserOption(option => option.setName("member")
 ///////////////////////////////////////////
 
 async function execute(interaction) {
+	var {client} = interaction
 	await interaction.deferReply({ephemeral: true})
 	let member = interaction.options.get("member")
 	let user = (member ? member.user : interaction.user )
@@ -39,9 +40,10 @@ async function execute(interaction) {
 		// let res = [userDB.jukes, userDB.boxes]
 		// await interaction.editReply(`__**${user.username}**'s Balance:__\n\n${JukeUtils.coinToEmote("jukes")} Jukes: **\`\`${res[0]}\`\`** ${JukeUtils.coinToEmote("jukes")}\n${JukeUtils.coinToEmote("boxes")} Boxes: **\`\`${res[1]}\`\`** ${JukeUtils.coinToEmote("boxes")}`)
 
-		let res = await Promise.all([MemberDB.get(user.id), UserCard(interaction.client, user.id)])
+		let res = await Promise.all([MemberDB.get(user.id), UserCard(client, user.id), client.channels.fetch(PC_CHANNEL)])
 		let userDB = res[0] 
 		var buf = res[1]
+		var PCForum = res[2]
 		var attachName = `jukebox-member-card-${user.id}.png`
 		const attachment = new AttachmentBuilder(buf, { name: attachName })
 
@@ -56,7 +58,7 @@ async function execute(interaction) {
 
 		var comps = []
 
-		if (userDB.channel != null) {
+		if (JukeUtils.getPC(user.id, PCForum) != null) {
 			var pcURL = `https://discord.com/channels/${GUILD_ID}/${userDB.channel}`
 
 			const row = new ActionRowBuilder()

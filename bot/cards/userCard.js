@@ -90,8 +90,8 @@ async function make(client, userId) {
 	])
 
 	var memberObj = proms[0]
-	var userObjDB = proms[1]
-	var PChannel = (proms[2].threads.cache.find(thread => thread.ownerId == memberObj.id ))	
+	var userObjDB = (proms[1] || MemberDB.default())
+	var PChannel = JukeUtils.getPC(memberObj.id, proms[2])
 
 	var COLOR = "#7E2AD1"
 

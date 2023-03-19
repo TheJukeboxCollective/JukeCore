@@ -79,4 +79,7 @@ module.exports = {
       })
       return (reaction ? reaction.count : 0)
 	},
+	getPC: (userId, PCForum) => {
+		return (PCForum.threads.cache.find(thread => thread.ownerId == userId ))
+	}
 }

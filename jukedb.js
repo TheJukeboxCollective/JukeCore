@@ -205,6 +205,17 @@ class Sheet {
         this._data = formatData(this._name, data)
     }
 
+    default() {
+        let thisObj = {}
+        let thisSchema = schemas[this._name]
+        let properties = Object.keys(this._data._rowIndex)
+        properties.forEach((key, ind) => {
+            thisObj[key] = thisSchema[ind+1].default
+        })
+        print(thisObj)
+        return thisObj
+    }
+
     async get(id) {
         await this._updateData()
         let idObj = this._data[id]
