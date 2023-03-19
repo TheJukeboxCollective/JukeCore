@@ -31,7 +31,7 @@ command.addStringOption(option => option.setName('type')
 	.setRequired(true))
 
 let badgeChoices = Object.keys(BADGES).map((badge, i) => {
-	return {name: badge, value: BADGES[badge]}
+	return {name: badge, value: BADGES[badge].name}
 })
 
 command.addStringOption(option => option.setName('badge')
@@ -58,7 +58,7 @@ async function execute(interaction) {
 			whos = Array.from(who.role.members.values())
 		} else {
 			pre = "@"
-			whos = [who.user]
+			whos = [who.member]
 		}
 
 		var sets = []

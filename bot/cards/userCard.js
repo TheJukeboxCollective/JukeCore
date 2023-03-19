@@ -16,6 +16,8 @@ const { createCanvas, registerFont, loadImage } = require('canvas')
 const { MemberDB, ChannelDB } = require("../../jukedb.js")
 const JukeUtils = require("../../jukeutils.js")
 
+const BADGES = require("../../badges.json")
+
 const DIR = './bot/cards/'
 const DF = 'fonts/'
 const DA = 'assets/'
@@ -189,6 +191,14 @@ async function make(client, userId) {
 	// ]
 	// let badges = await MemberDB.validBadges(userObjDB)
 	let badges = []
+	let thisRoles = Array.from(memberObj.roles.cache.keys())
+	Object.keys(BADGES).forEach(key => {
+		let badge = BADGES[key]
+		if (thisRoles.includes(badge.role)) {
+			badges.push(badge.name)
+		}
+	})
+	print(badges)
 	if (badges.length > 0) {
 		badges.forEach((badge, i) => {
 			var thisFunc = async () => {

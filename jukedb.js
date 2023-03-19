@@ -21,9 +21,6 @@ const schemas = {
         {type: "String", default: null}, // name
         {type: "Number", default: 0}, // jukes
         {type: "Number", default: 0}, // boxes
-        {type: "String", default: null}, // channel_id
-        {type: "Badges", default: null}, // badges
-        {type: "Number", default: 0}, // tier
         {type: "Number", default: 0}, // golds
         {type: "Number", default: 0}, // silvers
         {type: "Number", default: 0}, // bronzes
