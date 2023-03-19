@@ -58,8 +58,9 @@ async function execute(interaction) {
 
 		var comps = []
 
-		if (JukeUtils.getPC(user.id, PCForum) != null) {
-			var pcURL = `https://discord.com/channels/${GUILD_ID}/${userDB.channel}`
+		var thisPC = JukeUtils.getPC(user.id, PCForum)
+		if (thisPC != null) {
+			var pcURL = `https://discord.com/channels/${GUILD_ID}/${thisPC.id}`
 
 			const row = new ActionRowBuilder()
 			.addComponents(
