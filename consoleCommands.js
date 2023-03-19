@@ -63,7 +63,11 @@ module.exports = (client) => {
 					return arg
 				}).join(" ")
 
-				proms.push(member.user.send(parsedMessage))
+				try {
+					proms.push(member.user.send(parsedMessage))
+				} catch(err) {
+					print(`Some bitch probably blocked the bot: ${member.user.username}`)
+				}
 			}
 		})
 
