@@ -214,10 +214,10 @@ module.exports = client => {
         var pcOwners = Array.from(forumChannel.threads.cache.values()).map(PC => { return PC.ownerId })
         await Array.from(guild.members.cache.values()).asyncForEach(async member => {
             if (!pcOwners.includes(member.id)) {
-                await member.roles.add(PC_TOKEN_ROLE)
+                if (!member.roles.cache.has(PC_TOKEN_ROLE)) { await member.roles.add(PC_TOKEN_ROLE) }
                 // print(`${member.user.username} Does not own a PC`)
             } else {
-                await member.roles.remove(PC_TOKEN_ROLE)
+                if (member.roles.cache.has(PC_TOKEN_ROLE)) { await member.roles.remove(PC_TOKEN_ROLE) }
                 // print(`${member.user.username} OWNS A PC, WTFF`)
             }
         })
@@ -230,7 +230,7 @@ module.exports = client => {
         let guild = await client.guilds.fetch(GUILD_ID)
         let theseProms = [
             reactionRoleUpdate(guild),
-            updateBadgesAndTiers(guild),
+            // updateBadgesAndTiers(guild),
             updateTokens(guild),
         ]
 

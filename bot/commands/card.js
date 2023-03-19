@@ -26,7 +26,7 @@ command.addUserOption(option => option.setName("member")
 ///////////////////////////////////////////
 
 async function execute(interaction) {
-	await interaction.deferReply()
+	await interaction.deferReply({ephemeral: true})
 	let member = interaction.options.get("member")
 	let user = (member ? member.user : interaction.user )
 

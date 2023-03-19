@@ -98,7 +98,7 @@ class gsheetdb {
         range: `${this.sheetName}`,
         insertDataOption: 'INSERT_ROWS',
         valueInputOption: 'RAW',
-        resource: {
+        requestBody: {
           range: this.sheetName,
           majorDimension: 'ROWS',
           values: rows
@@ -131,7 +131,7 @@ class gsheetdb {
       }).spreadsheets.values.batchUpdate({
         auth: this.client,
         spreadsheetId: this.spreadsheetId,
-        resource: {
+        requestBody: {
           valueInputOption: 'RAW',
           data: [{
             range: `${this.sheetName}!${rowNumber}:${rowNumber}`,

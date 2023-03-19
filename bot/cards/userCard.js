@@ -2,11 +2,19 @@ const print = console.log
 
 //// Env
 const GUILD_ID = process.env['guild']
+const PC_CHANNEL = process.env['pc_chl']
+
+const JUKER_ROLE = process.env['juker_role']
+const SUPER_JUKER_ROLE = process.env['super_juker_role']
+const BOXEE_ROLE = process.env['boxee_role']
+const JUKEBOXER_ROLE = process.env['jukeboxer_role']
+const ARCHJUKER_ROLE = process.env['archjuker_role']
 
 //// Requires
 const path = require('path')
 const { createCanvas, registerFont, loadImage } = require('canvas')
 const { MemberDB, ChannelDB } = require("../../jukedb.js")
+const JukeUtils = require("../../jukeutils.js")
 
 const DIR = './bot/cards/'
 const DF = 'fonts/'
@@ -72,10 +80,16 @@ const countText = (amount, x, y) => {
 
 async function make(client, userId) {
 	var guildObj = await client.guilds.fetch(GUILD_ID)
-	var memberObj = await guildObj.members.fetch(userId)
 
-	var userObjDB = await MemberDB.get(userId)
-	var PChannel = (userObjDB.channel ? await client.channels.fetch(userObjDB.channel) : null)
+	var proms = await Promise.all([
+		guildObj.members.fetch(userId),
+		MemberDB.get(userId),
+		client.channels.fetch(PC_CHANNEL)
+	])
+
+	var memberObj = proms[0]
+	var userObjDB = proms[1]
+	var PChannel = (proms[2].threads.cache.find(thread => thread.ownerId == memberObj.id ))	
 
 	var COLOR = "#7E2AD1"
 
@@ -155,7 +169,8 @@ async function make(client, userId) {
 		let LikeIconImg = await loadImage(DIR+DA+"likeIcon.png")
 		ctx.drawImage(LikeIconImg, 1202, 704, 76, 76)
 
-		countText(randomInt(0, 25), 1240, 763)
+		let likes = await JukeUtils.getLikes(PChannel)
+		countText(likes, 1240, 763)
 	} else {
 		ctx.font = `40px "Big Card"`
 		ctx.textBaseline = "middle"
@@ -195,8 +210,9 @@ async function make(client, userId) {
 	}
 
 	// Tier Emblem
-	if (userObjDB.tier > 0) {
-		let tierEmblem = await loadImage(DIR+DA+`emblem${userObjDB.tier}.png`)
+	let thisTier = JukeUtils.getTier(memberObj.roles).ind
+	if (thisTier > 0) {
+		let tierEmblem = await loadImage(DIR+DA+`emblem${thisTier}.png`)
 		ctx.drawImage(tierEmblem, 331, 277, 141, 141)
 	}
 

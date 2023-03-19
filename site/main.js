@@ -19,8 +19,6 @@ const JukeUtils = require("../jukeutils.js")
 const websitePath = path.resolve(__dirname, 'website')
 const badgePath = path.resolve(__dirname, '../badges')
 
-const LIKE_EMOTE = process.env['emoji_l']
-
 //// Page Handling ////
 
 const PAGES = {
@@ -290,14 +288,8 @@ module.exports = (client) => {
         break;
         case 'PClikes':
           var channel = await client.channels.fetch(args[0])
-          var message = await channel.messages.fetch(args[0])
-          var reactions = message.reactions.cache
-          // print(reactions)
-          var reaction = reactions.find(react => {
-            // print(react.emoji.id, LIKE_EMOTE)
-            return (`<:${react.emoji.name}:${react.emoji.id}>` == LIKE_EMOTE)
-          })
-          callback(reaction ? reaction.count : 0)
+          var likes = await JukeUtils.getLikes(channel)
+          callback(likes)
         break;
       }
     })
