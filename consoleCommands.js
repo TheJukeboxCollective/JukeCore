@@ -53,7 +53,7 @@ module.exports = (client) => {
 
 			// 
 		}
-		Array.from(guild.members.cache.values()).asyncForEach(async member => {
+		await Array.from(guild.members.cache.values()).asyncForEach(async member => {
 			if (member.roles.cache.has(JUKEBOXER_ROLE)) {
 				var parsedMessage = args.map(arg => {
 					arg = arg.replace("{user}", `<@${member.id}>`)
@@ -65,6 +65,7 @@ module.exports = (client) => {
 
 				try {
 					await member.user.send(parsedMessage)
+					print(`DM'd ${member.user.username}`)
 				} catch(err) {
 					print(`Some bitch probably blocked the bot: ${member.user.username}`)
 				}

@@ -237,7 +237,7 @@ module.exports = client => {
     })
 
     client.on("messageCreate", async msg => {
-        print(`${msg.author.username}: ${msg.content}`)
+        if (msg.channel.type != 1 || msg.author.id != client.user.id) { print(`${msg.author.username}: ${msg.content}`) }
         var BLUTO_ID = "229319768874680320"
         var ignores = [BLUTO_ID, CLIENT_ID]
         if (msg.channel.type == 1 && !ignores.includes(msg.author.id) ) { // Who tf DMing the bot tho??
