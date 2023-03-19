@@ -187,7 +187,8 @@ async function make(client, userId) {
 	// 	"PKMN M&M 2022", "DEV",
 	// 	"PKMN M&M 2022", "DEV",
 	// ]
-	let badges = await MemberDB.validBadges(userObjDB)
+	// let badges = await MemberDB.validBadges(userObjDB)
+	let badges = []
 	if (badges.length > 0) {
 		badges.forEach((badge, i) => {
 			var thisFunc = async () => {
