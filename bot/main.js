@@ -187,10 +187,14 @@ module.exports = client => {
             ]
 
             // TIER_ROLES.forEach((roleId, ind) => {
+            await MemberDB._updateData()
             for (let ind = 0; ind < TIER_ROLES.length; ind++) {
                 let roleId = TIER_ROLES[ind]
                 if (member.roles.cache.has(roleId)) {
-                    thisProm = MemberDB.set(member.id, "tier", (TIER_ROLES.length-(ind+1)))
+                    let newVal = (TIER_ROLES.length-(ind+1))
+                    if (MemberDB.getNow(member.id).tier != newVal) {
+                        thisProm = MemberDB.set(member.id, "tier", newVal)
+                    }
                     break;
                 }
             }

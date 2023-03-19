@@ -218,6 +218,16 @@ class Sheet {
         }
     }
 
+    getNow(id) {
+        // await this._updateData()
+        let idObj = this._data[id]
+        if (idObj != null) {
+            return idObj.returnData
+        } else {
+            return null
+        }
+    }
+
     on(event, callback) {
         if (!Array.isArray(this._events[event])) {
             this._events[event] = []
