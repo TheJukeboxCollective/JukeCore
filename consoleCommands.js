@@ -53,7 +53,7 @@ module.exports = (client) => {
 
 			// 
 		}
-		guild.members.cache.forEach(async member => {
+		Array.from(guild.members.cache.values()).asyncForEach(async member => {
 			if (member.roles.cache.has(JUKEBOXER_ROLE)) {
 				var parsedMessage = args.map(arg => {
 					arg = arg.replace("{user}", `<@${member.id}>`)
@@ -64,14 +64,14 @@ module.exports = (client) => {
 				}).join(" ")
 
 				try {
-					proms.push(member.user.send(parsedMessage))
+					await member.user.send(parsedMessage)
 				} catch(err) {
 					print(`Some bitch probably blocked the bot: ${member.user.username}`)
 				}
 			}
 		})
 
-		await Promise.all(proms)
+		// await Promise.all(proms)
 
 		print("DM'd all JukeBoxers!")
 	})
