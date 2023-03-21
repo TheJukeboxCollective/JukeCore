@@ -1,5 +1,7 @@
 const print = console.log
 
+const BADGES = require("./badges.json")
+
 const JUKE_EMOJI = process.env['emoji_j']
 const BOX_EMOJI = process.env['emoji_b']
 
@@ -49,6 +51,19 @@ module.exports = {
 			check()
 		})
 	},
+	getBadges: member => {
+		let badges = []
+		let thisRoles = Array.from(member.roles.cache.keys())
+
+		Object.keys(BADGES).forEach(key => {
+			let badge = BADGES[key]
+			if (thisRoles.includes(badge.role)) {
+				badges.push(badge.name)
+			}
+		})
+
+		return badges
+	},
 	getTier: (roles) => {
         const TIER_ROLES = [
             ARCHJUKER_ROLE,     // 5 - 1 == 4
@@ -71,13 +86,17 @@ module.exports = {
         return toReturn
 	},
 	getLikes: async (channel) => {
-      var message = await channel.messages.fetch(channel.id)
-      var reactions = message.reactions.cache
-      // print(reactions)
-      var reaction = reactions.find(react => {
-        return (`<:${react.emoji.name}:${react.emoji.id}>` == LIKE_EMOTE)
-      })
-      return (reaction ? reaction.count : 0)
+			if (channel) {
+	      var message = await channel.messages.fetch(channel.id)
+	      var reactions = message.reactions.cache
+	      // print(reactions)
+	      var reaction = reactions.find(react => {
+	        return (`<:${react.emoji.name}:${react.emoji.id}>` == LIKE_EMOTE)
+	      })
+	      return (reaction ? reaction.count : 0)
+			} else {
+				return 0
+			}
 	},
 	getPC: (userId, PCForum) => {
 		return (PCForum.threads.cache.find(thread => thread.ownerId == userId ))

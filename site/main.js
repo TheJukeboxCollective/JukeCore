@@ -19,11 +19,15 @@ const JukeUtils = require("../jukeutils.js")
 const websitePath = path.resolve(__dirname, 'website')
 const badgePath = path.resolve(__dirname, '../badges')
 
+const CLIENT_ID = process.env['client']
+const PC_CHANNEL = process.env['pc_chl']
+const GUILD_ID = process.env['guild']
+
 //// Page Handling ////
 
 const PAGES = {
   "HOME": "home",
-  "BATTLES": "battles*",
+  "BATTx`LES": "battles*",
   "BATTLE": "battle",
   "USER": "user*",
   "NEWS": "news",
@@ -270,7 +274,7 @@ module.exports = (client) => {
       return JSON.parse(preRes)
     }
 
-    var bot_methods = ["user", "channel", "message", "PClikes", ["guild", process.env['guild']]]
+    var bot_methods = ["user", "channel", "message", "userPageInfo", "getBadges", "getPC", "getTier", "getLikes", ["guild", process.env['guild']]]
     socket.on("jukebot", async (method, args, callback) => {
       switch (method) {
         case 'user':
@@ -286,8 +290,42 @@ module.exports = (client) => {
           var message = await channel.messages.fetch(args[1])
           callback(serialize(message), serialize(channel))
         break;
-        case 'PClikes':
-          var channel = await client.channels.fetch(args[0])
+        case "userPageInfo":
+          // channel, likes, tiers, badges
+          var PCForum = await client.channels.fetch(PC_CHANNEL)
+          var channel = JukeUtils.getPC(args[0], PCForum)
+          let res = await Promise.all([
+            JukeUtils.getLikes(channel),
+            PCForum.guild.members.fetch(args[0]),
+          ])
+          var likes = res[0]
+          var member = res[1]
+          callback([
+            (channel ? serialize(channel) : null),
+            likes,
+            serialize(JukeUtils.getTier(member.roles)),
+            serialize(JukeUtils.getBadges(member)),
+          ])
+        break;
+        case "getBadges":
+          var guild = await client.guilds.fetch(GUILD_ID)
+          var member = await guild.members.fetch(args[0])
+          callback(JukeUtils.getBadges(member))
+        break;
+        case "getPC":
+          var PCForum = await client.channels.fetch(PC_CHANNEL)
+          var channel = JukeUtils.getPC(args[0], PCForum)
+          callback(serialize(channel))
+        break;
+        case "getTier":
+          var guild = await client.guilds.fetch(GUILD_ID)
+          var member = await guild.members.fetch(args[0])
+          callback(serialize(JukeUtils.getTier(member.roles)))
+        break;
+        case 'getLikes':
+          var PCForum = await client.channels.fetch(PC_CHANNEL)
+          var member = await PCForum.guild.members.fetch(args[0])
+          var channel = JukeUtils.getPC(member.id, PCForum)
           var likes = await JukeUtils.getLikes(channel)
           callback(likes)
         break;

@@ -9,7 +9,7 @@ const client = new Client({ intents: Object.values(IntentsBitField.Flags), parti
 
 require("./arrayLib.js")
 require("./bot/main.js")(client)
-// require("./site/main.js")(client)
+require("./site/main.js")(client)
 
 //// Console Commands ////
 require("./consoleCommands.js")(client)

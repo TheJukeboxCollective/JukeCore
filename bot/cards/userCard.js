@@ -190,14 +190,7 @@ async function make(client, userId) {
 	// 	"PKMN M&M 2022", "DEV",
 	// ]
 	// let badges = await MemberDB.validBadges(userObjDB)
-	let badges = []
-	let thisRoles = Array.from(memberObj.roles.cache.keys())
-	Object.keys(BADGES).forEach(key => {
-		let badge = BADGES[key]
-		if (thisRoles.includes(badge.role)) {
-			badges.push(badge.name)
-		}
-	})
+	let badges = JukeUtils.getBadges(memberObj)
 	print(badges)
 	if (badges.length > 0) {
 		badges.forEach((badge, i) => {

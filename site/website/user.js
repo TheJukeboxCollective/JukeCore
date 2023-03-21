@@ -10,19 +10,18 @@ eventListen("userPageLoad", async () => {
 	var userObjDB = res[0]
 	var userObjcord = res[1]
 
-	var PcObjDB;
 	var PcObjcord;
-	if (userObjDB.channel) {
-		res = await Promise.all([
-			ChannelDB.get(userObjDB.channel),
-			JukeBot.channel(userObjDB.channel),
-		])
+	var pcLikes;
+	var thisTier;
+	var badges;
+	res = await JukeBot.userPageInfo(userID)
 
-		PcObjDB = res[0]
-		PcObjcord = res[1]
-	}
+	PcObjcord = res[0]
+	pcLikes = res[1]
+	thisTier = res[2]
+	badges = res[3]
 
-	// print(userObjDB, userObjcord)
+	print(pcLikes)
 
 	let userName = new Elem("user-name")
 	userName.text = (userObjDB.name || userObjcord.username)
@@ -35,10 +34,9 @@ eventListen("userPageLoad", async () => {
 	userIcon.setAttr("src", userObjcord.displayAvatarURL+"?size=1024")
 
 	const TIERS = [null, "SuperJuker", "Boxee", "JukeBoxer", "ArchJuke"]
-	var thisTier = TIERS[userObjDB.tier]
 	if (thisTier != null) {
 		let userEmblem = new Elem("user-emblem")
-		userEmblem.setAttr("src", `emblems/${thisTier}.svg`)
+		userEmblem.setAttr("src", `emblems/emblem${thisTier.ind}.svg`)
 		userEmblem.setAttr("style", ``)
 	}
 
@@ -54,15 +52,18 @@ eventListen("userPageLoad", async () => {
 	})
 
 	let channelName = new Elem("channel-name")
+	let channelLikes = new Elem("channel-likes")
 	if (PcObjcord != null) {
 		channelName.text = ("🖥 "+PcObjcord.name)
-		channelName.href = `https://discord.com/channels/${JukeBot.guild}/${ENV["pc_chl"]}/threads/${userObjDB.channel}`
+		channelName.href = `https://discord.com/channels/${JukeBot.guild}/${ENV["pc_chl"]}/threads/${PcObjcord.id}`
 		channelName.setAttr("target", "_blank")
-		let channelLikes = new Elem("channel-likes")
-		channelLikes.setAttr("count", await JukeBot.PClikes(userObjDB.channel))
+
+		channelLikes.setAttr("count", pcLikes)
 	} else {
 		channelName.text = ("🖥 No Personal Channel...")
 		channelName.setAttr("no_channel", "")
+
+		channelLikes.setAttr("style", "display: none;")
 	}
 
 
@@ -78,7 +79,6 @@ eventListen("userPageLoad", async () => {
 	// 	"PKMN M&M 2022", "DEV", 
 	// 	"PKMN M&M 2022", "DEV", 
 	// ]
-	let badges = await MemberDB.validBadges(userObjDB)
 	if (badges.length > 0) {
 		noBadgesInd.style = "display: none;"
 		badges.forEach(badge => {

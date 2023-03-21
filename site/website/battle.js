@@ -40,7 +40,7 @@ eventListen("battlePageLoad", async () => {
 		var stream = file.stream()
 		var reader = stream.getReader()
 
-		await socket.emitWithAck("upload", "test", file.name, {type: "start"})
+		await socket.emitWithAck("upload", "test", file.name, {type: "start", battle: battleObj})
 
 		var fileSize = 0
 		reader.read().then(async function loop({ done, value }) {
