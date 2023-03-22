@@ -27,7 +27,7 @@ const GUILD_ID = process.env['guild']
 
 const PAGES = {
   "HOME": "home",
-  "BATTx`LES": "battles*",
+  "BATTLES": "battles*",
   "BATTLE": "battle",
   "USER": "user*",
   "NEWS": "news",
@@ -366,32 +366,64 @@ module.exports = (client) => {
 
     var activeUploads = {}
     // uploadId = 0
-    socket.on("uploadSong", async (battleId, songId, filename, event, callback) => {
-      var {ext} = activeUploads[songId]
-      var thisPath = `serverdir/${battleId}/${songId}.${ext}`
+    socket.on("uploadSong", async (songID, event, callback) => {
+      const {SongDB} = JukeDB
+      var thisUpload = activeUploads[songID]
       switch (event.type) {
         case "start":
-          var {SongDB} = JukeDB
-          songId = JukeUtils.validID(SongDB)
-          SongDB.setUp(songId, {
-            filename: filename,
-            battleID: battleID
-          })
-          var bits = filename.split(".")
-          activeUploads[songId] = {
-            ext: bits[bits.length-1]
+          // print(songID, event.songTitle, event)
+          var thisPath = `serverdir/${event.battleID}/${songID}`
+          delete event["type"]
+          var res = await Promise.all([
+            SongDB.setUp(songID, event),
+            fs.ensureFile(thisPath),
+          ])
+
+          var songObj = SongDB.getNow(songID)
+          activeUploads[songID] = {
+            thisPath: thisPath,
+            startEvent: event,
+            dbObj: songObj,
           }
-          callback(sondId)
+          
+          print(activeUploads[songID])
+          callback(activeUploads[songID])
+          // var {SongDB} = JukeDB
+          // songID = JukeUtils.validID(SongDB)
+          // SongDB.setUp(songID, {
+          //   filename: filename,
+          //   battleID: battleID
+          // })
+          // var bits = filename.split(".")
+          // activeUploads[songID] = {
+          //   ext: bits[bits.length-1]
+          // }
         break;
         case "data":
+          var {thisPath} = activeUploads[songID]
           await fs.appendFile(thisPath, event.data)
           callback()
         break;
         case "done":
-          await fs.move(thisPath, ``)
-          callback()
+          var {thisPath} = activeUploads[songID]
+          var correctExt = true
+          var ext = ""
+
+          var {fileTypeFromFile} = await import("file-type")
+          var fileType = await fileTypeFromFile(thisPath)
+          var ext = `.${fileType.ext}`
+
+          await fs.rename(thisPath, `${thisPath}${ext}`)
+          /// Check file extention logic here...
+
+          callback(correctExt)
         break;
       }
+    })
+
+    socket.on("genSongID", async (callback) => {
+      let songID = await JukeUtils.validID(JukeDB["SongDB"])
+      callback(songID)
     })
   })
 

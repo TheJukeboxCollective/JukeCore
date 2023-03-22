@@ -4,8 +4,8 @@ eventListen("battlePageLoad", async () => {
 	let battleStatus = new Elem("battle-status")
 
 
-	let battle_id = window.location.pathname.split("/")[2]
-	let battleObj = await JukeDB.BattleDB.get(battle_id)
+	let battleID = window.location.pathname.split("/")[2]
+	let battleObj = await JukeDB.BattleDB.get(battleID)
 
 
 	battleTitle.text = battleObj.title
@@ -34,33 +34,53 @@ eventListen("battlePageLoad", async () => {
 	let uploadInput = new Elem("upload-input")
 	print(uploadInput)
 
-	uploadInput.on("change", async e => {
-		print('mmmmkay')
-		var file = e.target.files[0]
+	async function updloadSubmission(songID) {
+		print('Starting upload to server...')
+		var file = uploadInput.elem.files[0]
 		var stream = file.stream()
 		var reader = stream.getReader()
 
-		await socket.emitWithAck("upload", "test", file.name, {type: "start", battle: battleObj})
 
 		var fileSize = 0
 		reader.read().then(async function loop({ done, value }) {
 			if (done) {
-				print("done I guess ", fileSize)
-				await socket.emitWithAck("upload", "test", file.name, {type: "done"})
+				await socket.emitWithAck("uploadSong", songID, {type: "done"})
+				print("Upload complete: ", fileSize)
 				return
 			}
 
 			// fileSize += value.length
-			// print(value)
-			await socket.emitWithAck("upload", "test", file.name, {type: "data", data: value})
+			await socket.emitWithAck("uploadSong", songID, {type: "data", data: value})
+			print("Data sent...")
 
 			return reader.read().then(loop)
 		})
-	})
+	}
 
 	let uploadButton = new Elem("upload-button")
 	uploadButton.on("click", e => {
 		uploadInput.elem.click()
+		uploadButton.style.setProperty("display", "none")
+		new Elem("upload-song-info").style.removeProperty("display")
+	})
+
+	let titleInput = new Elem("song-title-input")
+	let addCollabButton = new Elem("add-collaborator-button")
+	let collabGroup = new Elem("collab-group")
+	let submitButton = new Elem("submit-button")
+
+	submitButton.on("click", async e => {
+		let songID = await socket.emitWithAck("genSongID")
+		let res = await socket.emitWithAck("uploadSong", songID, {
+			type: "start",
+			battleID: battleID,
+			title: titleInput.elem.value,
+			length: uploadInput.elem.files[0].size,
+			authors: [localStorage.getItem("userID")]
+		})
+		print(res)
+
+		await updloadSubmission(songID)
 	})
 
 

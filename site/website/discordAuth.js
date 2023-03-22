@@ -21,6 +21,7 @@ async function loggedIn() {
 			e.preventDefault()
 			switchTo(`user`, false, `/user/${userObj.id}`)
 		})
+		localStorage.setItem("userID", userObj.id)
     } else if (guilds != null && !guilds.includes(ENV.guild)) {
     	print(`attempting "guilds/${ENV.guild}/members/${userObj.id}"...`)
     	let res = await socket.emitWithAck("joinUser", userObj.id, access_token)

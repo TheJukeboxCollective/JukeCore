@@ -33,10 +33,6 @@
 		margin-left: 5%;
 	}
 
-	#upload-input {
-		display: none;
-	}
-
 	#upload-button {
 		width: 80%;
 		height: 250px;
@@ -84,6 +80,12 @@
 	<div id="file-upload-cont">
 		<button id="upload-button"><span class="material-symbols-outlined" id="upload-icon">upload</span> SUBMIT</button>
 		<p id="upload-info">Size Limit: <span style="color: #ffffff5c">100mb</span> | Accepted Types: <span style="color: #ffffff5c">.wav, .mp3, .ogg</span></p>
-		<input id="upload-input" type="file" accept=".wav,.mp3,.ogg"/>
+		<div id="upload-song-info" style="display: none;">
+			<input id="upload-input" type="file" accept=".wav,.mp3,.ogg"/>
+			<input id="song-title-input" type="text" placeholder="Song Title">
+			<div id="collab-group"></div>
+			<button id="add-collaborator-button">+ Add Collaborate</button>
+			<button id="submit-button">Submit</button>
+		</div>
 	</div>
 </div>

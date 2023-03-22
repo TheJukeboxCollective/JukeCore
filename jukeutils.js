@@ -44,7 +44,6 @@ module.exports = {
 					await wait(1)
 					check()
 				} else {
-					print(retID)
 					res(retID)
 				}
 			}
