@@ -31,6 +31,7 @@ eventListen("userPageLoad", async () => {
 	}
 
 	let userIcon = new Elem("user-icon")
+	print(userObjcord)
 	userIcon.setAttr("src", userObjcord.displayAvatarURL+"?size=1024")
 
 	const TIERS = [null, "SuperJuker", "Boxee", "JukeBoxer", "ArchJuke"]

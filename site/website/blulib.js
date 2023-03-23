@@ -24,7 +24,7 @@ class Elem {
 	// METHODS //
 
 	delete() {
-		// deleting logic
+		this.elem.remove()
 	}
 
 	on(event, callback) {

@@ -86,6 +86,10 @@ function measureText(text) {
     return ctx.measureText(text)
 }
 
+Array.prototype.last = function () {
+	return this[this.length-1]
+}
+
 //// Anchor Elements do the thing
 
 Object.defineProperty(Elem.prototype, "href", {

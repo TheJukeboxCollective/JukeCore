@@ -57,28 +57,64 @@ eventListen("battlePageLoad", async () => {
 		})
 	}
 
+	let titleInput = new Elem("song-title-input")
+	let addCollabButton = new Elem("add-collaborator-button")
+	let removeCollabButton = new Elem("remove-collaborator-button")
+	let collabGroup = new Elem("collab-group")
+	let submitButton = new Elem("submit-button")
+
+	async function loadMembers(argument) {
+		var members = await JukeBot.getMembers()
+		var memberList = new Elem("datalist")
+		memberList.id = "member-list"
+
+		members.forEach(member => {
+			let thisOption = new Elem("option")
+			thisOption.text = member.id
+			thisOption.setAttr("value", member.tag)
+
+			memberList.addChild(thisOption)
+		})
+		new Elem("upload-song-info").addChild(memberList)
+
+
+		return members
+	}
+
 	let uploadButton = new Elem("upload-button")
-	uploadButton.on("click", e => {
+	var parseMembers = {}
+	uploadButton.on("click", async e => {
 		uploadInput.elem.click()
+		var members = await loadMembers()
+		members.forEach(member => parseMembers[member.tag] = member.id)
+
+		addCollabButton.on("click", e => {
+			var collabInput = new Elem("input")
+			collabInput.setAttr("placeholder", "Select collaborator...")
+			collabInput.setAttr("list", "member-list")
+			collabGroup.addChild(collabInput)
+		})
+		removeCollabButton.on("click", e => {
+			let lastChild = collabGroup.children.last()
+			if (lastChild) { lastChild.delete() }
+		})
+
 		uploadButton.style.setProperty("display", "none")
 		new Elem("upload-song-info").style.removeProperty("display")
 	})
 
-	let titleInput = new Elem("song-title-input")
-	let addCollabButton = new Elem("add-collaborator-button")
-	let collabGroup = new Elem("collab-group")
-	let submitButton = new Elem("submit-button")
-
 	submitButton.on("click", async e => {
 		let songID = await socket.emitWithAck("genSongID")
+		let collaborators = collabGroup.children.map(elem=>(parseMembers[elem.elem.value]))
 		let res = await socket.emitWithAck("uploadSong", songID, {
 			type: "start",
 			battleID: battleID,
 			title: titleInput.elem.value,
 			length: uploadInput.elem.files[0].size,
-			authors: [localStorage.getItem("userID")]
+			authors: [localStorage.getItem("userID")].concat(collaborators)
 		})
 		print(res)
+
 
 		await updloadSubmission(songID)
 	})

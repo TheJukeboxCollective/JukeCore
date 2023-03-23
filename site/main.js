@@ -23,6 +23,8 @@ const CLIENT_ID = process.env['client']
 const PC_CHANNEL = process.env['pc_chl']
 const GUILD_ID = process.env['guild']
 
+var {DataManager} = require("discord.js")
+
 //// Page Handling ////
 
 const PAGES = {
@@ -254,6 +256,102 @@ module.exports = (client) => {
       }
     })
 
+    // Symbol used to mark already visited nodes - helps with circular dependencies
+    function removeCirculars(obj, maxDepth = 10) {
+      const visitedMark = Symbol('VISITED_MARK');
+
+      const MAX_CLEANUP_DEPTH = maxDepth;
+
+      function loop(obj, depth = 0) {
+        if (!obj) {
+          return obj;
+        }
+
+        // Skip condition - either object is falsy, was visited or we go too deep
+        const shouldSkip = !obj || obj[visitedMark] || depth > MAX_CLEANUP_DEPTH;
+
+        // Copy object (we copy properties from it and mark visited nodes)
+        const originalObj = obj;
+        let result = {};
+
+        Object.keys(originalObj).forEach((entry) => {
+          const val = originalObj[entry];
+
+          if (!shouldSkip) {
+            const nextDepth = depth + 1;
+            var isColl = (val instanceof DataManager)
+            // print(isColl)
+            if (isColl) {
+              result[entry] = Array.from(val.cache.values()).map(subVal => loop(subVal, nextDepth))
+            } else if (typeof val === 'object') { // Value is an object - run object sanitizer
+              originalObj[visitedMark] = true; // Mark current node as "seen" - will stop from going deeper into circulars
+              result[entry] = loop(val, nextDepth);
+            } else if (typeof val == 'bigint') {
+              result[entry] = Number(String(val))
+            } else {
+              result[entry] = val;
+            }
+          } else {
+            result = "[ Circular ]";
+          }
+        });
+
+        return result;
+      }
+
+      return loop(obj)
+    }
+
+    // var serialize = obj => {
+    //   var cache = [obj]
+    //   var parseObj = (thisObj, inArray = false) => {
+    //     const invalidTypes = [
+    //       "function"
+    //     ]
+
+    //     var parsedObj = {}
+    //     var isArray = Array.isArray(thisObj)
+    //     if (isArray) { parsedObj = [] }
+
+    //     Object.keys(thisObj).forEach(key => {
+    //       var value = thisObj[key]
+    //       var valueType = (typeof value)
+    //       print(key, valueType)
+
+    //       parsedObj[key] = null
+    //       if (value != null && !["manager"].includes(key)) {
+    //         if (valueType == "object") {
+    //           if (isCyclic(value)) {
+    //             parsedObj[key] = 
+    //           }
+    //           parsedObj[key] = parseObj(value)
+    //           if (!isArray && cache.includes(value)) {
+    //             parsedObj[key] = "[ Circular ]"
+    //           } else {
+                
+    //             cache.push(value)
+    //           }
+    //         } else if (!invalidTypes.includes(valueType)) {
+    //           parsedObj[key] = value
+    //         }
+    //       }
+    //     })
+
+    //     return parsedObj
+    //   }
+
+    //   return parseObj(obj)
+    // }
+
+    // let test = async () => {
+    //   var guild = await client.guilds.fetch(GUILD_ID)
+    //   var members = await guild.members.fetch()
+    //   members = Array.from(members.values())
+    //   // print(members[0])
+    //   serialize(members)
+    // }
+
+    // test()
     const serialize = obj => {
       var replacer = (key, value) => {
         var cache = []
@@ -265,6 +363,7 @@ module.exports = (client) => {
             if (cache.includes(value)) { return "[circular]" }
             cache.push(value)
             return JSON.parse(JSON.stringify(value, replacer))
+            // print(key, value)
           } else {
             return value
           }
@@ -274,11 +373,16 @@ module.exports = (client) => {
       return JSON.parse(preRes)
     }
 
-    var bot_methods = ["user", "channel", "message", "userPageInfo", "getBadges", "getPC", "getTier", "getLikes", ["guild", process.env['guild']]]
+    var bot_methods = ["user", "channel", "message", "userPageInfo", "getBadges", "getPC", "getTier", "getLikes", "getMembers", ["guild", process.env['guild']]]
     socket.on("jukebot", async (method, args, callback) => {
       switch (method) {
         case 'user':
-          var user = await client.users.fetch(args[0])
+          var user;
+          try {
+            user = await client.users.fetch(args[0])
+          } catch (err) {
+            user = null
+          }
           callback(serialize(user))
         break;
         case 'channel':
@@ -328,6 +432,18 @@ module.exports = (client) => {
           var channel = JukeUtils.getPC(member.id, PCForum)
           var likes = await JukeUtils.getLikes(channel)
           callback(likes)
+        break;
+        case "getMembers":
+          var {MemberDB} = JukeDB
+
+          let theseProms = await Promise.all([
+            client.guilds.fetch(GUILD_ID),
+            MemberDB._updateData(),
+          ])
+          var guild = theseProms[0]
+          var members = guild.members.cache
+          members = Array.from(members.values()).filter(member=>(!member.user.bot)).map(member => ({id: member.id, tag: ((MemberDB.getNow(member.id) != null && MemberDB.getNow(member.id).name != null) ? `@${MemberDB.getNow(member.id).name}` : `${member.user.username}#${member.user.discriminator}`)}))
+          callback(members)
         break;
       }
     })

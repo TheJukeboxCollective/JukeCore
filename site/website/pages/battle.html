@@ -63,6 +63,74 @@
 	 	color: #ffffff25;
 	 	text-align: center;
 	 }
+
+	 #submit-header {
+	 	font-family: 'Big Card';
+	 	font-size: 64px;
+	 }
+
+	 #song-title-input {
+		font-family: 'Mid Card';
+		font-size: 20px;
+		width: 800px;
+		height: 64px;
+		color: #ffffff;
+		background: #0d0d0d;
+		border: none;
+		border-radius: 64px;
+		padding-left: 15px;
+		padding-right: 15px;
+		margin-bottom: 16px;
+	 }
+
+	 #upload-input {
+	 	margin-left: 15px;
+	 }
+
+	 #collab-header {
+	 	font-family: 'Big Card';
+	 	font-size: 24px;
+	 	margin-bottom: 10px;
+	 }
+
+	 .opp-button {
+	 	font-family: 'Big Card';
+	 	font-size: 16px;
+	 	border: none;
+	 	border-radius: 50%;
+	 	width: 32px;
+	 	height: 32px;
+	 	margin-left: 5px;
+	 	margin-bottom: 15px;
+	 }
+
+	 .add { color: #376D03;background: #8CD612; }
+	 .remove { color: #871646;background: #E03C28; }
+
+	 #collab-group {
+	 	margin-bottom: 64px;
+	 }
+
+	 input[list='member-list'] {
+		border: none;
+		font-size: 15px;
+		font-family: 'Mid Card';
+		color: white;
+		background: #0d0d0d;
+		border-radius: 24px;
+		margin-left: 15px;
+	 }
+
+	 #submit-button {
+		width: 349px;
+		height: 64px;
+		border: none;
+		border-radius: 64px;
+		background: #6A31CA;
+		color: white;
+		font-size: 32px;
+		font-family: 'Big Card';
+	 }
 </style>
 
 <svg id="loading-icon" xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 96 960 960" width="48"><path d="M478 917q-143 0-242.5-99.5T136 576.247q0-141.754 99.5-242Q335 234 478.379 234q88.913 0 158.662 36.223Q706.789 306.445 757 373V234h69v285H540v-68h162q-40-58-94.315-92Q553.369 325 478 325q-105 0-178 72.623-73 72.622-73 178.083 0 105.627 73 177.961Q373 826 478.339 826q76.721 0 142.691-44.5T716 663h94q-31 113-123.255 183.5Q594.489 917 478 917Z"/></svg>
@@ -79,13 +147,17 @@
 
 	<div id="file-upload-cont">
 		<button id="upload-button"><span class="material-symbols-outlined" id="upload-icon">upload</span> SUBMIT</button>
-		<p id="upload-info">Size Limit: <span style="color: #ffffff5c">100mb</span> | Accepted Types: <span style="color: #ffffff5c">.wav, .mp3, .ogg</span></p>
 		<div id="upload-song-info" style="display: none;">
-			<input id="upload-input" type="file" accept=".wav,.mp3,.ogg"/>
+			<p id="submit-header">Submit Track</p>
 			<input id="song-title-input" type="text" placeholder="Song Title">
+			<input id="upload-input" type="file" accept=".wav,.mp3,.ogg"/>
+			<br>
+			<p id="collab-header">Add/Remove Collaborators:</p><button class="remove opp-button" id="remove-collaborator-button">-</button><button class="add opp-button" id="add-collaborator-button">+</button>
+			<br>
 			<div id="collab-group"></div>
-			<button id="add-collaborator-button">+ Add Collaborate</button>
+			<br>
 			<button id="submit-button">Submit</button>
 		</div>
+		<p id="upload-info">Size Limit: <span style="color: #ffffff5c">100mb</span> | Accepted Types: <span style="color: #ffffff5c">.wav, .mp3, .ogg</span></p>
 	</div>
 </div>
