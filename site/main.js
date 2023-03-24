@@ -4,6 +4,7 @@ const path = require('path')
 var request = require('sync-request')
 var moment = require('moment')
 const fs = require('fs-extra')
+var fd = require("file-duplicates")
 // Server //
 const express = require('express')
 const app = express()
@@ -521,6 +522,8 @@ module.exports = (client) => {
           callback()
         break;
         case "done":
+          var errors = []
+
           var {thisPath} = activeUploads[songID]
           var correctExt = true
           var ext = ""
@@ -532,7 +535,14 @@ module.exports = (client) => {
           await fs.rename(thisPath, `${thisPath}${ext}`)
           /// Check file extention logic here...
 
-          callback(correctExt)
+          /// File Duplicates
+          // var duplicates = await fd.find(`serverdir/${event.battleID}/${songID}`, `serverdir/${event.battleID}`)
+          // print(duplicates)
+          // if (duplicates.length > 1) { errors.push({type: "DUPE", paths: duplicates}) }
+
+          print("DONE", errors)
+
+          callback(errors)
         break;
       }
     })

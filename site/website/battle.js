@@ -52,8 +52,16 @@ eventListen("battlePageLoad", async () => {
 			progress += value.length
 			let progPercent = ((progress/file.size)*100)
 			new Elem("progress-bar").style.setProperty("--progress", `${progPercent}%`)
-			await socket.emitWithAck("uploadSong", songID, {type: "data", data: value})
+			var errors = await socket.emitWithAck("uploadSong", songID, {type: "data", data: value})
 			print("Data sent...")
+			print(errors)
+			errors.forEach(error => {
+				switch (error.type) {
+					case "DUPE":
+						print("UPLOAD ERROR: FILE ALREADY SUBMITTED TO BATTLE")
+					break;
+				}
+			})
 
 			return reader.read().then(loop)
 		})
