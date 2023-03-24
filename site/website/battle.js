@@ -41,15 +41,17 @@ eventListen("battlePageLoad", async () => {
 		var reader = stream.getReader()
 
 
-		var fileSize = 0
+		var progress = 0
 		reader.read().then(async function loop({ done, value }) {
 			if (done) {
 				await socket.emitWithAck("uploadSong", songID, {type: "done"})
-				print("Upload complete: ", fileSize)
+				print("Upload complete: ", file.size)
 				return
 			}
 
-			// fileSize += value.length
+			progress += value.length
+			let progPercent = ((progress/file.size)*100)
+			new Elem("progress-bar").style.setProperty("--progress", `${progPercent}%`)
 			await socket.emitWithAck("uploadSong", songID, {type: "data", data: value})
 			print("Data sent...")
 

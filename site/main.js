@@ -502,7 +502,7 @@ module.exports = (client) => {
             dbObj: songObj,
           }
           
-          print(activeUploads[songID])
+          // print(activeUploads[songID])
           callback(activeUploads[songID])
           // var {SongDB} = JukeDB
           // songID = JukeUtils.validID(SongDB)

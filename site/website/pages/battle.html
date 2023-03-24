@@ -131,6 +131,15 @@
 		font-size: 32px;
 		font-family: 'Big Card';
 	 }
+
+	 #progress-bar {
+	 	width: 100%;
+	 	height: 16px;
+	 	margin-top: 30px;
+	 	border-radius: 48px;
+	 	background: linear-gradient(to right, #6A31CA 0% var(--progress), #0d0d0d var(--progress) 100%);
+	 	transition-duration: 40ms;
+	 }
 </style>
 
 <svg id="loading-icon" xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 96 960 960" width="48"><path d="M478 917q-143 0-242.5-99.5T136 576.247q0-141.754 99.5-242Q335 234 478.379 234q88.913 0 158.662 36.223Q706.789 306.445 757 373V234h69v285H540v-68h162q-40-58-94.315-92Q553.369 325 478 325q-105 0-178 72.623-73 72.622-73 178.083 0 105.627 73 177.961Q373 826 478.339 826q76.721 0 142.691-44.5T716 663h94q-31 113-123.255 183.5Q594.489 917 478 917Z"/></svg>
@@ -157,6 +166,7 @@
 			<div id="collab-group"></div>
 			<br>
 			<button id="submit-button">Submit</button>
+			<div style="--progress: 0%" id="progress-bar"></div>
 		</div>
 		<p id="upload-info">Size Limit: <span style="color: #ffffff5c">100mb</span> | Accepted Types: <span style="color: #ffffff5c">.wav, .mp3, .ogg</span></p>
 	</div>
