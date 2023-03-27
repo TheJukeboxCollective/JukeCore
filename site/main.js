@@ -19,12 +19,16 @@ const JukeUtils = require("../jukeutils.js")
 
 const websitePath = path.resolve(__dirname, 'website')
 const badgePath = path.resolve(__dirname, '../badges')
+const serverPath = path.resolve(__dirname, '../serverdir')
 
 const CLIENT_ID = process.env['client']
 const PC_CHANNEL = process.env['pc_chl']
 const GUILD_ID = process.env['guild']
 
 var {DataManager} = require("discord.js")
+var {REST} = require('@discordjs/rest')
+
+var rest = new REST({ version: '10' }).setToken(process.env['token'])
 
 //// Page Handling ////
 
@@ -145,6 +149,23 @@ module.exports = (client) => {
     res.redirect('/home')
   })
 
+  app.get(`/song/:id`, async (req, res) => {
+    app.use(`/song/:id`, express.static(serverPath, {index: false}))
+    var dbObj = await JukeDB.SongDB.get(req.params.id)
+    var files = await fs.readdir(serverPath+`/${dbObj.battleID}`)
+    var ext;
+    for (let i = 0; i < files.length; i++) {
+      var file = files[i]
+      if (file.startsWith(req.params.id)) {
+        var namebits = file.split(".")
+        ext = namebits[namebits.length-1]
+        break
+      }
+    }
+
+    res.sendFile(`/${dbObj.battleID}/${req.params.id}.${ext}`, {root: path.resolve(__dirname, "../serverdir")});
+  })
+
   io.on("connection", socket => {
     print("New Socket connected!")
     socket.on("PAGE", async page => {
@@ -157,14 +178,14 @@ module.exports = (client) => {
       }
     })
 
-    socket.on("code", code => {
+    socket.on("code", (code, uri) => {
 
       var data = {
-        client_id: "1065987974296244224",
-        client_secret: "lpvsMbew6gdy2ichuW67Or5BJXlOO19X",
+        client_id: process.env['client'],
+        client_secret: process.env['client_secret'],
         grant_type: 'authorization_code',
         code: code,
-        redirect_uri: "http://localhost:8080/home"
+        redirect_uri: uri
       }
 
       var bits = new URLSearchParams(Object.entries(data)).toString()
@@ -200,30 +221,38 @@ module.exports = (client) => {
 
     const DISCORD_API = `https://discord.com/api/v9`
 
-    socket.on("joinUser", (userId, access_token, callback) => {
-      let res = request("PUT", `${DISCORD_API}/guilds/${process.env['guild']}/members/${userId}`, {
-        headers: {
-          Authorization: `Bot ${process.env["token"]}`
-        },
-        json: {
-          access_token: access_token
-        }
-      })
-
-      var resText;
-
+    socket.on("joinUser", async (userId, access_token, callback) => {
       try {
-        resText = res.getBody("utf-8")
+        let res = await rest.put(`/guilds/${process.env['guild']}/members/${userId}`, {
+          body: { access_token: access_token }
+        })
+        callback(res)
       } catch (err) {
-        resText = err  
-        print(resText)
+        callback(res)
       }
+      // let res = request("PUT", `${DISCORD_API}/guilds/${process.env['guild']}/members/${userId}`, {
+      //   headers: {
+      //     Authorization: `Bot ${process.env["token"]}`
+      //   },
+      //   json: {
+      //     access_token: access_token
+      //   }
+      // })
 
-      if (typeof resText == "string") {
-        callback(JSON.parse(resText))
-      } else {
-        callback(null)
-      }
+      // var resText;
+
+      // try {
+      //   resText = res.getBody("utf-8")
+      // } catch (err) {
+      //   resText = err  
+      //   print(resText)
+      // }
+
+      // if (typeof resText == "string") {
+      //   callback(JSON.parse(resText))
+      // } else {
+      //   callback(null)
+      // }
     })
 
     socket.on("discord", (access_token, method, path, data, callback) => {
@@ -399,10 +428,15 @@ module.exports = (client) => {
           // channel, likes, tiers, badges
           var PCForum = await client.channels.fetch(PC_CHANNEL)
           var channel = JukeUtils.getPC(args[0], PCForum)
-          let res = await Promise.all([
-            JukeUtils.getLikes(channel),
-            PCForum.guild.members.fetch(args[0]),
-          ])
+          var res;
+          try {
+            res = await Promise.all([
+              JukeUtils.getLikes(channel),
+              PCForum.guild.members.fetch(args[0]),
+            ])
+          } catch(err) {
+            res = [null, null]
+          }
           var likes = res[0]
           var member = res[1]
           callback([
@@ -439,11 +473,21 @@ module.exports = (client) => {
 
           let theseProms = await Promise.all([
             client.guilds.fetch(GUILD_ID),
-            MemberDB._updateData(),
+            MemberDB.getAll(),
           ])
           var guild = theseProms[0]
-          var members = guild.members.cache
-          members = Array.from(members.values()).filter(member=>(!member.user.bot)).map(member => ({id: member.id, tag: ((MemberDB.getNow(member.id) != null && MemberDB.getNow(member.id).name != null) ? `@${MemberDB.getNow(member.id).name}` : `${member.user.username}#${member.user.discriminator}`)}))
+          var members = []
+          var dbMembers = theseProms[1]
+          var membersCollection = guild.members.cache
+          Array.from(membersCollection.values()).forEach(member => {
+            if (!member.user.bot) {
+              var dbMember = dbMembers.find(dbMember => dbMember._id == member.id)
+              members.push({
+                id: member.id,
+                tag: ((dbMember != null && dbMembers.name != null) ? `@${dbMember.name}` : `${member.user.username}#${member.user.discriminator}`)
+              })
+            }
+          })
           callback(members)
         break;
       }
@@ -461,7 +505,8 @@ module.exports = (client) => {
     var infoDBs = []
     var validMethods = {
       "MemberDB": ["validBadges"],
-      "BattleDB": ["getActive"]
+      "BattleDB": ["getActive"],
+      "SongDB": ["getUserSongs", "getBattleSongs", "getUserBattleSongs"],
     }
     Object.keys(JukeDB).forEach(DB_title => {
       infoDBs.push({
@@ -471,7 +516,7 @@ module.exports = (client) => {
     })
     socket.emit("jukedb_info", infoDBs)
 
-    const public_envs = ["guild", "pc_chl"]
+    const public_envs = ["guild", "pc_chl", "s_chl"]
     var thing_envs = []
     public_envs.forEach(env => {
       thing_envs.push({
@@ -486,21 +531,18 @@ module.exports = (client) => {
     socket.on("uploadSong", async (songID, event, callback) => {
       const {SongDB} = JukeDB
       var thisUpload = activeUploads[songID]
+      // print(event)
       switch (event.type) {
         case "start":
           // print(songID, event.songTitle, event)
           var thisPath = `serverdir/${event.battleID}/${songID}`
           delete event["type"]
-          var res = await Promise.all([
-            SongDB.setUp(songID, event),
-            fs.ensureFile(thisPath),
-          ])
 
-          var songObj = SongDB.getNow(songID)
+          await fs.ensureFile(thisPath)
+
           activeUploads[songID] = {
             thisPath: thisPath,
             startEvent: event,
-            dbObj: songObj,
           }
           
           // print(activeUploads[songID])
@@ -522,23 +564,36 @@ module.exports = (client) => {
           callback()
         break;
         case "done":
-          var errors = []
+          var {dbObj, startEvent, thisPath} = thisUpload
 
-          var {thisPath} = activeUploads[songID]
+          var errors = []
+          var deleteNOW = false
+
           var correctExt = true
           var ext = ""
 
           var {fileTypeFromFile} = await import("file-type")
           var fileType = await fileTypeFromFile(thisPath)
           var ext = `.${fileType.ext}`
-
-          await fs.rename(thisPath, `${thisPath}${ext}`)
-          /// Check file extention logic here...
+          var filename = `${thisPath}${ext}`
 
           /// File Duplicates
-          // var duplicates = await fd.find(`serverdir/${event.battleID}/${songID}`, `serverdir/${event.battleID}`)
-          // print(duplicates)
-          // if (duplicates.length > 1) { errors.push({type: "DUPE", paths: duplicates}) }
+          var duplicates = await fd.find(thisPath, "")
+          print(duplicates)
+          if (duplicates.length >= 1) {
+            errors.push({type: "DUPE", paths: duplicates})
+            await fs.remove(thisPath)
+            deleteNOW = true
+          }
+
+          /// Check file extention logic here...
+
+          if (errors.length == 0) {
+            await fs.rename(thisPath, filename)
+          }
+          if (!deleteNOW) {
+            await SongDB.setUp(songID, thisUpload.startEvent)
+          }
 
           print("DONE", errors)
 

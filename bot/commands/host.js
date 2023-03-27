@@ -52,7 +52,7 @@ command.addStringOption(option => option.setName('unit')
 ///////////////////////////////////////////
 
 async function execute(interaction) {
-	interaction.deferReply()
+	await interaction.deferReply()
 
 	let title = interaction.options.get("title").value
 	let desc = interaction.options.get("description").value

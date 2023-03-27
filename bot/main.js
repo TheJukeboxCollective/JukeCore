@@ -24,7 +24,7 @@ const REACT_MSG = process.env['react_msg']
 const MUSICIAN_ROLE = process.env['musi_role']
 const SUBSCRIBER_ROLE = process.env['sub_role']
 
-const {MemberDB, ChannelDB} = require("../jukedb.js")
+const {MemberDB} = require("../jukedb.js")
 
 const { REST } = require('@discordjs/rest')
 const { Routes } = require('discord-api-types/v9')

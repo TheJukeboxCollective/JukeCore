@@ -1,5 +1,6 @@
 (async () => {
-const OAUTH_LINK = `https://discord.com/api/oauth2/authorize?client_id=1065987974296244224&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fhome&response_type=code&scope=identify%20guilds.join%20guilds`
+var thisUri = `http://${window.location.host}/home`
+var OAUTH_LINK = `https://discord.com/api/oauth2/authorize?client_id=1086267936018284607&redirect_uri=${encodeURI(thisUri)}&response_type=code&scope=guilds%20identify%20guilds.join`
 
 var profileStatus = new Elem("login-status")
 
@@ -14,7 +15,7 @@ async function loggedIn() {
 	// print(guilds, userObj)
 	guilds = (guilds != null ? guilds.map(guild=>guild.id) : null)
     if (guilds != null && guilds.includes(ENV.guild)) {
-		let userObjDB = await JukeDB.MemberDB.get(userObj.id)
+		let userObjDB = (await JukeDB.MemberDB.get(userObj.id) || {})
 		profileStatus.html = `Logged in as<br><a style="color: #ffffff;">${(userObjDB.name || userObj.username)}</a>`
 		profileStatus.children[1].href = `/user/${userObj.id}`
 		profileStatus.children[1].on("click", e => {
@@ -40,20 +41,20 @@ function loggedOut() {
 if (localStorage.getItem("access") != null) {
 	loggedIn()
 } else {
-	loggedOut()
-}
+	var code = new URLSearchParams(window.location.search).get("code")
+	if (code != null && window.location.pathname.split("/").join("") == "home") {
+		socket.emit("code", code, thisUri)
 
-var code = new URLSearchParams(window.location.search).get("code")
-if (code != null && window.location.pathname.split("/").join("") == "home") {
-	socket.emit("code", code)
-
-	socket.on("userAccessInfo", async info => {
-		if (info != "That shit don't exist >:|") {
-			localStorage.setItem("access", JSON.stringify(info))
-			loggedIn()
-		} else {
-			print(info)
-		}
-	})
+		socket.on("userAccessInfo", async info => {
+			if (info != "That shit don't exist >:|") {
+				localStorage.setItem("access", JSON.stringify(info))
+				loggedIn()
+			} else {
+				loggedOut()
+			}
+		})
+	} else {
+		loggedOut()
+	}
 }
 })();

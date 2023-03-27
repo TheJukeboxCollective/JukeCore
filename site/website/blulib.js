@@ -27,8 +27,11 @@ class Elem {
 		this.elem.remove()
 	}
 
-	on(event, callback) {
-		this.elem.addEventListener(event, callback)
+	on(events, callback) {
+		if (!Array.isArray(events)) {events = [events]}
+		events.forEach(event => {
+			this.elem.addEventListener(event, callback)
+		})
 	}
 
 	clear() {

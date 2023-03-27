@@ -7,7 +7,7 @@ eventListen("userPageLoad", async () => {
 		JukeBot.user(userID),
 	])
 
-	var userObjDB = res[0]
+	var userObjDB = (res[0] || {})
 	var userObjcord = res[1]
 
 	var PcObjcord;
@@ -34,8 +34,7 @@ eventListen("userPageLoad", async () => {
 	print(userObjcord)
 	userIcon.setAttr("src", userObjcord.displayAvatarURL+"?size=1024")
 
-	const TIERS = [null, "SuperJuker", "Boxee", "JukeBoxer", "ArchJuke"]
-	if (thisTier != null) {
+	if (thisTier.ind != 0) {
 		let userEmblem = new Elem("user-emblem")
 		userEmblem.setAttr("src", `emblems/emblem${thisTier.ind}.svg`)
 		userEmblem.setAttr("style", ``)
@@ -43,13 +42,13 @@ eventListen("userPageLoad", async () => {
 
 	let jukesBalance = new Elem("balance-jukes")
 	let boxesBalance = new Elem("balance-boxes")
-	jukesBalance.text = userObjDB.jukes.toLocaleString("en-US")
-	boxesBalance.text = userObjDB.boxes.toLocaleString("en-US")
+	jukesBalance.text = (userObjDB.jukes || 0).toLocaleString("en-US")
+	boxesBalance.text = (userObjDB.boxes || 0).toLocaleString("en-US")
 
 	let places = ["golds", "silvers", "bronzes"]
 	places.forEach(place => {
 		let placeElem = new Elem(`placings-${place}`)
-		placeElem.setAttr("count", userObjDB[place])
+		placeElem.setAttr("count", (userObjDB[place] || 0))
 	})
 
 	let channelName = new Elem("channel-name")

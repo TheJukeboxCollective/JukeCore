@@ -1,7 +1,7 @@
 const print = console.log
-const gsheetdb = require('./gsheetdb.js')
-const SHEET_ID = process.env['sheet']
-const SCRIPT_ID = process.env['script']
+const Datastore = require('@seald-io/nedb')
+const fs = require('fs-extra')
+const path = require('path')
 
 function getAllFuncs(toCheck) {
     const props = [];
@@ -16,38 +16,29 @@ function getAllFuncs(toCheck) {
 }
 
 const schemas = {
-    members: [
-        {type: "String", default: null}, // user_id
-        {type: "String", default: null}, // name
-        {type: "Number", default: 0}, // jukes
-        {type: "Number", default: 0}, // boxes
-        {type: "Number", default: 0}, // golds
-        {type: "Number", default: 0}, // silvers
-        {type: "Number", default: 0}, // bronzes
-    ],
-    channels: [
-        {type: "String", default: null}, // channel_id
-        {type: "String", default: null}, // owner
-        {type: "Array", default: []}, // admins
-        {type: "Array", default: []}, // managers
-    ],
-    battles: [
-        {type: "String", default: null}, // battle_id
-        {type: "String", default: null}, // host_id
-        {type: "String", default: null}, // title
-        {type: "String", default: null}, // desc
-        {type: "Date", default: "NOW"}, // startTime
-        {type: "Date", default: null}, // endTime
-    ],
-    songs: [
-        {type: "String", default: null}, // song_id
-        {type: "String", default: null}, // battle_id
-        {type: "String", default: null}, // title
-        {type: "Array", default: []}, // authors
-        {type: "Date", default: "NOW"}, // uploadDate
-        {type: "String", default: null}, // filename
-        {type: "Number", default: 0}, // length
-    ]
+    members: {
+        name: {type: "String", default: null}, // name
+        jukes: {type: "Number", default: 0}, // jukes
+        boxes: {type: "Number", default: 0}, // boxes
+        golds: {type: "Number", default: 0}, // golds
+        silvers: {type: "Number", default: 0}, // silvers
+        bronzes: {type: "Number", default: 0}, // bronzes
+    },
+    battles: {
+        host: {type: "String", default: null}, // host_id
+        title: {type: "String", default: null}, // title
+        desc: {type: "String", default: null}, // desc
+        startTime: {type: "Date", default: "NOW"}, // startTime
+        endTime: {type: "Date", default: null}, // endTime
+    },
+    songs: {
+        battleID: {type: "String", default: null}, // battle_id
+        title: {type: "String", default: null}, // title
+        authors: {type: "Array", default: []}, // authors
+        uploadDate: {type: "Date", default: "NOW"}, // uploadDate
+        ext: {type: "String", default: null}, // filename
+        length: {type: "Number", default: null}, // length
+    }
 }
 
 function wait(ms) {
@@ -73,6 +64,20 @@ const escapedChars = ["{", "}", "[", "]"]
 //         return "String"
 //     }
 // }
+
+function parseDefault(schema) {
+    var {type} = schema
+    var value = schema.default
+
+    var newVal = value
+
+    switch (type) {
+        case "Date":
+            if (value == "NOW") { newVal = Date.now() }
+    }
+
+    return newVal
+}
 
 function escape(name, ind, value) {
     // var valueType = getType(value)
@@ -183,59 +188,23 @@ var formatData = (name, data) => {
     return returnObj
 }
 
-class Sheet {
+class Database {
     constructor(name) {
         this.inited = false
         this._name = name
-        this._sheet = new gsheetdb({
-            spreadsheetId: SHEET_ID,
-            scriptId: SCRIPT_ID,
-            sheetName: name,
-            credentialsJSON: require('./credentials.json')
-        })
-        this._updateData().then(() => {
+        this._path = path.resolve(__dirname, `database/${name}.db`)
+        this._db = new Datastore({ filename: this._path })
+
+        Promise.all([
+            this._db.loadDatabaseAsync(),
+            fs.ensureFile(this._path),
+        ]).then(() => {
             this.inited = true
             this._call("init")
         })
+
         this._events = []
     }
-
-    async _updateData() {
-        let data = await this._sheet.getData()
-        this._data = formatData(this._name, data)
-    }
-
-    default() {
-        let thisObj = {}
-        let thisSchema = schemas[this._name]
-        let properties = Object.keys(this._data._rowIndex)
-        properties.forEach((key, ind) => {
-            thisObj[key] = thisSchema[ind+1].default
-        })
-        print(thisObj)
-        return thisObj
-    }
-
-    async get(id) {
-        await this._updateData()
-        let idObj = this._data[id]
-        if (idObj != null) {
-            return idObj.returnData
-        } else {
-            return null
-        }
-    }
-
-    getNow(id) {
-        // await this._updateData()
-        let idObj = this._data[id]
-        if (idObj != null) {
-            return idObj.returnData
-        } else {
-            return null
-        }
-    }
-
     on(event, callback) {
         if (!Array.isArray(this._events[event])) {
             this._events[event] = []
@@ -251,159 +220,141 @@ class Sheet {
         }
     }
 
-    async _pend() {
-        const total_pends = 1
-        var pendings = 0
-
-        return new Promise((res, rej) => {
-            var check = () => { pendings++; if(pendings == total_pends){ res() }}
-
-            if (!this.inited) {
-                this.on("init", () => { check() })
-            } else { check() }
+    default() {
+        let thisObj = {}
+        let thisSchema = schemas[this._name]
+        let properties = Object.keys(schemas[this._name])
+        properties.forEach((key) => {
+            thisObj[key] = parseDefault(thisSchema[key])
         })
+        return thisObj
+    }
+
+    async get(id) {
+        var toReturn = await this._db.findOneAsync({_id: id})
+        return toReturn
+    }
+
+    async _pend() {
+        // ...
     }
 
     async set(id, key, value) {
-        await this._updateData()
-        let idData = this._data[id]
-        let valueInd = this._data._rowIndex[key]
-        value = escape(this._name, valueInd, value)
-        if (idData != null) {
-            let newDataArray = idData._rowData
-            newDataArray[valueInd] = value
-            await this._sheet.updateRow(idData._index, newDataArray)
-        } else {
-            let newRowData = schemas[this._name].map((sch, thisInd) => escape(this._name, thisInd, sch.default))
-            newRowData[0] = id
-            newRowData[this._data._rowIndex[key]] = value
-            await this._sheet.insertRows([newRowData])
-        }
-        await this._updateData()
+        var setter = {}
+        setter[key] = value
+        print(setter)
+
+        if (!await this.exists(id)) {var def = this.default(); def._id = id; print(def); await this._db.insertAsync(def)}
+        var res = await this._db.updateAsync({ _id: id }, { $set: setter })
+        print(res)
     }
 
     async setUp(id, obj) {
-        let idObj = await this.get(id)
-        let idData = this._data[id]
-        let exists = (idObj != null)
+        var exists = await this.exists(id)
+        print(exists)
 
-        var rowData = []
-        if (exists) {
-            rowData = idData._rowData
+        var currObj;
+        if (!exists) {
+            currObj = this.default()
+            currObj._id = id
         } else {
-            rowData = schemas[this._name].map((sch, thisInd) => escape(this._name, thisInd, sch.default))
-            rowData[0] = id
+            currObj = await this.get(id)
         }
 
         Object.keys(obj).forEach(key => {
-            var ind = this._data._rowIndex[key]
             var val = obj[key]
-            var def = schemas[this._name][ind].default
-
-            rowData[ind] = escape(this._name, ind, val)
+            currObj[key] = val
         })
 
-        if (exists) {
-            await this._sheet.updateRow(idData._index, rowData)
+        print(currObj)
+
+        var doc;
+        if (!exists) {
+            doc = await this._db.insertAsync(currObj)
         } else {
-            await this._sheet.insertRows([rowData])
+            doc = (await this._db.updateAsync({_id: id}, { $set: currObj }))
         }
 
-        await this._updateData()
+        return doc
 
-        return this._data[id].returnData
+        // let idObj = await this.get(id)
+        // let idData = this._data[id]
+        // let exists = (idObj != null)
 
-        // Basically, this method would allow you to set multiple values on a db
-        // Hella useful for initializing a new obj, such as battles where Input a bunch of info
-        // Might have to make a new method on the gsheet.js module
-        /* Example Usage:
+        // var rowData = []
+        // if (exists) {
+        //     rowData = idData._rowData
+        // } else {
+        //     rowData = schemas[this._name].map((sch, thisInd) => escape(this._name, thisInd, sch.default))
+        //     rowData[0] = id
+        // }
 
-            BattleDB.setUp(battleID, {
-                host: interaction.user.id,
-                title: battleTitle,
-                desc: battleDesc,
-                // startTime wouldn't need to be defined because it would be set to the default (Date.now())
-                endTime: moment().add(duration, unit).toValue()
-            })
-        */
-        // I would also use this on file uploads and user registration
-        // This can be used to create a new db obj, but also update just so you know
-        // This means, keys that aren't defined on a new obj will be set to the default value
-        // While for preexisting objs, they just remain the same value they currently are!
+        // Object.keys(obj).forEach(key => {
+        //     var ind = this._data._rowIndex[key]
+        //     var val = obj[key]
+        //     var def = schemas[this._name][ind].default
+
+        //     rowData[ind] = escape(this._name, ind, val)
+        // })
+
+        // if (exists) {
+        //     await this._sheet.updateRow(idData._index, rowData)
+        // } else {
+        //     await this._sheet.insertRows([rowData])
+        // }
+
+        // await this._updateData()
+
+        // return this._data[id].returnData
     }
 
     async add(id, key, value) {
-        await this._updateData()
-        let idData = this._data[id]
-        let newValue = (idData.returnData[key]+value)
+        var obj = await this.get(id)
+        let newValue = (obj[key]+value)
         await this.set(id, key, newValue)
     }
 
     async sub(id, key, value) {
-        await this._updateData()
-        let idData = this._data[id]
-        let newValue = (idData.returnData[key]-value)
+        var obj = await this.get(id)
+        let newValue = (obj[key]-value)
         await this.set(id, key, newValue)
     }
 
     async push(id, key, value) {
-        await this._updateData()
-        var tempArr = this._data[id].returnData[key]
-        tempArr.push(value)
-        await this.set(id, key, tempArr)
+        var setter = {}
+        setter[key] = value
+        if (!this.exists(id)) {var def = this.default(); def._id = id; await this._db.insertAsync(def)}
+        await this._db.updateAsync({ _id: id }, { $push: setter })
     }
 
     async pull(id, key, value) {
-        await this._updateData()
-        var tempArr = this._data[id].returnData[key]
-        var ind = tempArr.indexOf(value)
-        tempArr.splice(ind, 1)
-        await this.set(id, key, tempArr)
+        var setter = {}
+        setter[key] = value
+        if (!this.exists(id)) {var def = this.default(); def._id = id; await this._db.insertAsync(def)}
+        await this._db.updateAsync({ _id: id }, { $pull: setter })
     }
 
     async remove(id) {
-        await this._updateData()
-        let idData = this._data[id]
-        if (idData != null) {
-            let newDataArray = idData._rowData
-            newDataArray[0] = "{DELETE}"
-            await this._sheet.updateRow(idData._index, newDataArray)
-        }
+        await this._db.removeAsync({ _id: id }, {})
     }
 
     async has(key, value) {
-        await this._updateData()
-        var return_id = null
-
-        Object.keys(this._data).forEach(obj_key => {
-            if (!obj_key.startsWith("_")) { // skip lib keys
-                let idOdj = this._data[obj_key].returnData
-                if (idOdj[key] == value) {
-                    return_id = obj_key
-                }
-            }
-        })
-
-        return return_id
+        var query = {}
+        query[key] = value
+        var obj = await this._db.findOneAsync(query)
+        return obj._id
     }
 
     async exists(id) {
-        await this._updateData()
-
-        return (this._data[id] != null)
+        return (this._db.count({_id: id}) > 0)
     }
 
     async match(func) {
-        await this._updateData()
-
         var retArr = []
+        var Objs = this._db.getAllData()
 
-        Object.keys(this._data).forEach(key => {
-            if (key.startsWith("_")) { return }
-            var obj = this._data[key].returnData
-
+        Objs.forEach(obj => {
             if (func(obj) == true) {
-                obj.id = key
                 retArr.push(obj)
             }
         })
@@ -417,28 +368,13 @@ class Sheet {
     }
 
     get size() {
-        return new Promise(async (res, rej) => {
-            await this._updateData()
-            res(Object.values(this._data).length-1)
-        })
+        return this._db.getAllData().length
     }
 }
 
-var MemberDB = new Sheet("members")
-var ChannelDB = new Sheet("channels")
-var BattleDB = new Sheet("battles")
-var SongDB = new Sheet("songs")
-
-MemberDB.orig_set = MemberDB.set.bind(MemberDB)
-MemberDB.set = async (id, key, value) => {
-    var promises = []
-    if (key == "channel") {
-        promises.push(ChannelDB.set(value, "owner", id))
-    }
-    promises.push(MemberDB.orig_set(id, key, value))
-
-    await Promise.all(promises)
-}
+var MemberDB = new Database("members")
+var BattleDB = new Database("battles")
+var SongDB = new Database("songs")
 
 MemberDB.validBadges = (obj) => {
     if (Object.values(obj.badges).some(val => val == true)) {
@@ -461,9 +397,20 @@ BattleDB.getActive = async () => {
     })
 }
 
+SongDB.getUserSongs = async (author) => {
+    return SongDB.match(obj => obj.authors.includes(author))
+}
+
+SongDB.getBattleSongs = async (battle) => {
+    return SongDB.match(obj => obj.battleID == battle)
+}
+
+SongDB.getUserBattleSongs = async (author, battle) => {
+    return SongDB.match(obj => (obj.authors.includes(author) && (obj.battleID == battle)))
+}
+
 module.exports = { // JukeDB
     MemberDB: MemberDB,
-    ChannelDB: ChannelDB,
     BattleDB: BattleDB,
     SongDB: SongDB,
 }

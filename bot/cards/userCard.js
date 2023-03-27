@@ -13,7 +13,7 @@ const ARCHJUKER_ROLE = process.env['archjuker_role']
 //// Requires
 const path = require('path')
 const { createCanvas, registerFont, loadImage } = require('canvas')
-const { MemberDB, ChannelDB } = require("../../jukedb.js")
+const { MemberDB } = require("../../jukedb.js")
 const JukeUtils = require("../../jukeutils.js")
 
 const BADGES = require("../../badges.json")

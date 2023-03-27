@@ -90,20 +90,39 @@ Array.prototype.last = function () {
 	return this[this.length-1]
 }
 
+Array.prototype.asyncForEach = async function(func) {
+	var proms = []
+
+	this.forEach((...args) => {
+		proms.push(func(...args))
+	})
+
+	return await Promise.all(proms)
+}
+
 //// Anchor Elements do the thing
+
+function THEANCHORFUNC(e) {
+	var elem = e.target
+	e.preventDefault()
+	let elemURL = new URL(elem.href)
+	print(elemURL.host == window.location.host)
+	if (elemURL.host == window.location.host) {
+		var dest = elem.href.split(window.location.host)[1]
+		let ind = 0
+		if (dest.startsWith("/")) {ind = 1}
+		var page = dest.split("/")[ind]
+		if (Object.keys(SHORTENS).includes(page) && (occurrences(dest, "/") - ind) > 0) { page = SHORTENS[page] }
+		print(page, dest)
+		switchTo(page, false, dest) 
+	}
+}
 
 Object.defineProperty(Elem.prototype, "href", {
 	set(val) {
 		this._href = val
 		this.elem.setAttribute("href", val)
-		this.elem.onclick = e => {
-			let elemURL = new URL(this.elem.href)
-			print(elemURL.host == window.location.host)
-			if (elemURL.host == window.location.host) {
-				e.preventDefault()
-				goto("/"+this.elem.href.split("/").pop(), false) 
-			}
-		}
+		this.elem.onclick = THEANCHORFUNC
 	},
 
 	get() {
@@ -115,22 +134,10 @@ const SHORTENS = {
 	battles: "battle",
 	users: "user"
 }
+
 function updateAnchors() {
 	Array.from(document.querySelectorAll('a')).forEach(elem => {
-		elem.onclick = e => {
-			e.preventDefault()
-			let elemURL = new URL(elem.href)
-			print(elemURL.host == window.location.host)
-			if (elemURL.host == window.location.host) {
-				var dest = elem.href.split(window.location.host)[1]
-				let ind = 0
-				if (dest.startsWith("/")) {ind = 1}
-				var page = dest.split("/")[ind]
-				if (Object.keys(SHORTENS).includes(page) && (occurrences(dest, "/") - ind) > 0) { page = SHORTENS[page] }
-				print(page, dest)
-				switchTo(page, false, dest) 
-			}
-		} 
+		elem.onclick = THEANCHORFUNC
 	})
 }
 updateAnchors()
@@ -203,3 +210,19 @@ function eventFire(event) {
 }
 
 window.onpopstate = e => { newPop() }
+
+
+function downloadFile(url, fileName){
+  fetch(url, { method: 'get', mode: 'no-cors', referrerPolicy: 'no-referrer' })
+    .then(res => res.blob())
+    .then(res => {
+      const aElement = document.createElement('a');
+      aElement.setAttribute('download', fileName);
+      const href = URL.createObjectURL(res);
+      aElement.href = href;
+      // aElement.setAttribute('href', href);
+      aElement.setAttribute('target', '_blank');
+      aElement.click();
+      URL.revokeObjectURL(href);
+    });
+}
