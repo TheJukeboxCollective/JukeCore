@@ -266,6 +266,19 @@ a {
     opacity: 1;
 }
 
+#as-in-divider {
+    width: 90%;
+    height: 10px;
+    border-radius: 25px;
+    background: #ffffff25;
+    margin-left: 5%;
+}
+
+ .header {
+    font-family: 'Big Card';
+    font-size: 64px;
+ }
+
 /* width */
 ::-webkit-scrollbar {
   width: 15px;

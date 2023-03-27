@@ -102,11 +102,10 @@ Array.prototype.asyncForEach = async function(func) {
 
 //// Anchor Elements do the thing
 
-function THEANCHORFUNC(e) {
-	var elem = e.target
+function THEANCHORFUNC(e, elem) {
+	// var elem = e.target
 	e.preventDefault()
 	let elemURL = new URL(elem.href)
-	print(elemURL.host == window.location.host)
 	if (elemURL.host == window.location.host) {
 		var dest = elem.href.split(window.location.host)[1]
 		let ind = 0
@@ -114,6 +113,8 @@ function THEANCHORFUNC(e) {
 		var page = dest.split("/")[ind]
 		if (Object.keys(SHORTENS).includes(page) && (occurrences(dest, "/") - ind) > 0) { page = SHORTENS[page] }
 		switchTo(page, false, dest)
+	} else {
+		goto(elem.href, true)
 	}
 }
 
@@ -121,7 +122,7 @@ Object.defineProperty(Elem.prototype, "href", {
 	set(val) {
 		this._href = val
 		this.elem.setAttribute("href", val)
-		this.elem.onclick = THEANCHORFUNC
+		this.elem.onclick = e => { THEANCHORFUNC.bind(null, e, this.elem)() }
 	},
 
 	get() {
@@ -136,7 +137,7 @@ const SHORTENS = {
 
 function updateAnchors() {
 	Array.from(document.querySelectorAll('a')).forEach(elem => {
-		elem.onclick = THEANCHORFUNC
+		elem.onclick = e => { THEANCHORFUNC.bind(null, e, elem)() }
 	})
 }
 updateAnchors()

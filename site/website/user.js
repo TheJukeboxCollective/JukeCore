@@ -94,4 +94,67 @@ eventListen("userPageLoad", async () => {
 
 	let userBadges = new Elem("user-badges")
 	userBadges.text = `🎖️ Badges (${badges.length})`
+
+
+	//// USER TRACKS ////
+	var tracksCont = new Elem("song-cont")
+
+	var cachedUserInfo = {}
+	async function getUserInfo(id) {
+		if (id in cachedUserInfo) {
+			return cachedUserInfo[id]
+		} else {
+			var res = await Promise.all([
+				JukeDB.MemberDB.get(id),
+				JukeBot.user(id)
+			])
+			cachedUserInfo[id] = res
+			return res
+		}
+	}
+
+	async function renderTrack(submission) {
+		var trackElem = new Elem("div")
+		var trackTitleElem = new Elem("p")
+		var trackAudioCont = new Elem("div")
+		var trackAudioElem = new Elem("audio")
+
+		var authors = [];
+		print(submission.authors)
+		await submission.authors.asyncForEach(async author => {
+			print(author)
+
+			var res = await getUserInfo(author)
+
+			var dbObj = (res[0] || {})
+			var cordObj = (res[1] || {})
+			authors.push([dbObj, cordObj])
+		})
+
+		trackTitleElem.html = (
+			`${authors.map(author => `<a href="/user/${author[1].id}">${(author[0].name || author[1].username)}</a>`).join(", ")}`+
+			" - "+
+			`${submission.title}`
+		)
+		trackTitleElem.classes.add("track-title")
+
+		trackAudioElem.elem.src = `http://${window.location.host}/song/${submission._id}/`
+
+		trackElem.addChild(trackTitleElem)
+		trackAudioCont.addChild(trackAudioElem)
+		trackElem.addChild(trackAudioCont)
+		tracksCont.addChild(trackElem)
+
+		new GreenAudioPlayer(trackAudioCont.elem, {
+			showDownloadButton: true
+		})
+
+		trackAudioCont.children[3].children[0].on("click", e => {
+			e.preventDefault()
+			downloadFile(trackAudioElem.elem.src, `${trackTitleElem.text}.wav`)
+		})
+	}
+
+	var submissions = await JukeDB.SongDB.getUserSongs(userID)
+	await submissions.asyncForEach(renderTrack)
 })
