@@ -535,7 +535,8 @@ module.exports = (client) => {
       switch (event.type) {
         case "start":
           // print(songID, event.songTitle, event)
-          var thisPath = path.resolve(serverPath, `/${event.battleID}/${songID}`)
+          var thisPath = path.join(serverPath, `/${event.battleID}/${songID}`)
+          print(thisPath)
           delete event["type"]
 
           await fs.ensureFile(thisPath)
