@@ -192,7 +192,7 @@ class Database {
     constructor(name) {
         this.inited = false
         this._name = name
-        this._path = path.resolve(__dirname, `database/${name}.db`)
+        this._path = path.resolve(process.env["database"], `${name}.db`)
         this._db = new Datastore({ filename: this._path })
 
         Promise.all([

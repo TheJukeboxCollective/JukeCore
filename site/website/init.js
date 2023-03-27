@@ -113,8 +113,7 @@ function THEANCHORFUNC(e) {
 		if (dest.startsWith("/")) {ind = 1}
 		var page = dest.split("/")[ind]
 		if (Object.keys(SHORTENS).includes(page) && (occurrences(dest, "/") - ind) > 0) { page = SHORTENS[page] }
-		print(page, dest)
-		switchTo(page, false, dest) 
+		switchTo(page, false, dest)
 	}
 }
 

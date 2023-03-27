@@ -19,7 +19,7 @@ const JukeUtils = require("../jukeutils.js")
 
 const websitePath = path.resolve(__dirname, 'website')
 const badgePath = path.resolve(__dirname, '../badges')
-const serverPath = path.resolve(__dirname, '../serverdir')
+const serverPath = process.env['serverdir']
 
 const CLIENT_ID = process.env['client']
 const PC_CHANNEL = process.env['pc_chl']
@@ -163,7 +163,7 @@ module.exports = (client) => {
       }
     }
 
-    res.sendFile(`/${dbObj.battleID}/${req.params.id}.${ext}`, {root: path.resolve(__dirname, "../serverdir")});
+    res.sendFile(`/${dbObj.battleID}/${req.params.id}.${ext}`, {root: serverPath});
   })
 
   io.on("connection", socket => {
@@ -535,7 +535,7 @@ module.exports = (client) => {
       switch (event.type) {
         case "start":
           // print(songID, event.songTitle, event)
-          var thisPath = `serverdir/${event.battleID}/${songID}`
+          var thisPath = path.resolve(serverPath, `/${event.battleID}/${songID}`)
           delete event["type"]
 
           await fs.ensureFile(thisPath)

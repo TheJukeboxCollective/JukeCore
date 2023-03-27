@@ -1,5 +1,6 @@
 node_modules/
 serverdir/
+database/
 package-lock.json
 credentials.json
 .env
