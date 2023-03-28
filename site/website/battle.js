@@ -6,6 +6,7 @@ eventListen("battlePageLoad", async () => {
 
 	let battleID = window.location.pathname.split("/")[2]
 	let battleObj = await JukeDB.BattleDB.get(battleID)
+	var STATE = null
 
 
 	battleTitle.text = battleObj.title
@@ -30,6 +31,48 @@ eventListen("battlePageLoad", async () => {
 			cachedUserInfo[id] = res
 			return res
 		}
+	}
+
+	function loadVoteElem(voteCont) {
+		var amount = Number(voteCont.getAttribute("amount"))
+		var amountElem = document.createElement('p')
+		amountElem.textContent = 0
+
+		function spawnStar(thisInd) {
+		var starCont = document.createElement("img")
+		starCont.classList.add("star")
+		starCont.src = "https://www.svgrepo.com/download/172818/star-outline.svg"
+
+		starCont.onclick = event => {
+		  if (event.offsetX < (event.target.offsetWidth/2)) {
+		    event.target.src = "https://www.svgrepo.com/download/110699/star-black-shape-of-favourite-interface-symbol.svg"
+		    voteCont.value = (thisInd + 1)
+		  } else if (event.offsetX < (event.target.offsetWidth/4)*3) {
+		    event.target.src = "https://www.svgrepo.com/download/174637/star-half-empty.svg"
+		    voteCont.value = (thisInd + 0.5)
+		  } else {
+		    event.target.src = "https://www.svgrepo.com/download/172818/star-outline.svg"
+		    voteCont.value = (thisInd)
+		  }
+		  
+		  var starChilds = Array.from(voteCont.children).filter(elem => elem.tagName == "IMG")
+		  // Stars in front...
+		  for (var o = (thisInd+1); o < amount; o++) {
+		    starChilds[o].src = "https://www.svgrepo.com/download/172818/star-outline.svg"
+		  }
+		  // Stars in behind...
+		  for (var o = 0; o < thisInd; o++) {
+		    starChilds[o].src = "https://www.svgrepo.com/download/110699/star-black-shape-of-favourite-interface-symbol.svg"
+		  }
+		  
+		  amountElem.textContent = voteCont.value
+		}
+
+		voteCont.appendChild(starCont)
+		voteCont.appendChild(amountElem)
+		}
+
+		for (var i = 0; i < amount; i++) { spawnStar(i) }
 	}
 
 	async function renderTrack(submission) {
@@ -62,6 +105,13 @@ eventListen("battlePageLoad", async () => {
 		trackElem.addChild(trackTitleElem)
 		trackAudioCont.addChild(trackAudioElem)
 		trackElem.addChild(trackAudioCont)
+		if (STATE == "VOTE") {
+			var voteCont = new Elem("vote")
+			voteCont.setAttr("amount", 5)
+			loadVoteElem(voteCont.elem)
+			trackElem.addChild(voteCont)
+		}
+
 		tracksCont.addChild(trackElem)
 
 		new GreenAudioPlayer(trackAudioCont.elem, {
@@ -75,6 +125,8 @@ eventListen("battlePageLoad", async () => {
 	}
 
 	if (Date.now() < battleObj.endTime) { //// ACTIVE ////
+		STATE = "ACTIVE"
+
 		battleStatus.setAttr("state", "active")
 		submitCont.style = ""
 
@@ -236,11 +288,13 @@ eventListen("battlePageLoad", async () => {
 		}
 
 	} else if (Date.now() < voteTime) { //// VOTING ////
+		STATE = "VOTE"
 		battleStatus.setAttr("state", "voting")
 		tracksCont.style = ""
 		let submissions = await JukeDB.SongDB.getBattleSongs(battleID)
 		await submissions.asyncForEach(renderTrack)
 	} else { //// COMPLETE ////
+		STATE = "DONE"
 		battleStatus.setAttr("state", "complete")
 		tracksCont.style = ""
 	}

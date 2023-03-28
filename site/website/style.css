@@ -339,3 +339,10 @@ a {
 .green-audio-player .controls {
     color: #454545;
 }
+
+.star {
+  width: 32px;
+  fill: #6A31CA !important;
+  height: auto;
+  transform: scale(-1,1);
+}
