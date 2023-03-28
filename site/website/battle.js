@@ -76,6 +76,7 @@ eventListen("battlePageLoad", async () => {
 	}
 
 	async function renderTrack(submission) {
+		print("rendering...", submission)
 		var trackElem = new Elem("div")
 		var trackTitleElem = new Elem("p")
 		var trackAudioCont = new Elem("div")
@@ -258,6 +259,7 @@ eventListen("battlePageLoad", async () => {
 					var errors = await socket.emitWithAck("uploadSong", songID, {type: "done"})
 					// print("Upload complete: ", file.size)
 					if (errors.length == 0) {
+						JukeDB.SongDB.get(songID).then(renderTrack)
 						setResult(0, "You can submit another by reloading the page!")
 					} else {
 						var e_msgs = []
