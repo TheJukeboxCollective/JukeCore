@@ -506,7 +506,7 @@ module.exports = (client) => {
     var validMethods = {
       "MemberDB": ["validBadges"],
       "BattleDB": ["getActive"],
-      "SongDB": ["getUserSongs", "getBattleSongs", "getUserBattleSongs"],
+      "SongDB": ["getUserSongs", "getPublicUserSongs", "getBattleSongs", "getUserBattleSongs"],
     }
     Object.keys(JukeDB).forEach(DB_title => {
       infoDBs.push({
@@ -601,6 +601,30 @@ module.exports = (client) => {
           callback(errors)
         break;
       }
+    })
+
+    var votePromises = {}
+    socket.on("updateVote", async (song, voterID, voteValue, callback) => {
+      var {SongDB} = JukeDB
+      var ID = `${song._id}-${voterID}`
+
+      const exec = async (ID, func) => {
+        if (votePromises[ID].size > 0) {
+          await func()
+          var Iter = votePromises[ID].keys()
+          votePromises[ID].delete(thisFunc)
+          if (votePromises[ID].size == 0) {
+            delete votePromises[ID]
+          } else {
+            exec(ID, Iter.next().value)
+          } 
+        }
+      }
+
+      if (votePromises[ID] == null) { votePromises[ID] = new Set() }
+      var thisFunc = SongDB.setOnObj.bind(SongDB, song._id, "votes", voterID, voteValue)
+      votePromises[ID].add(thisFunc)
+      exec(ID, thisFunc)
     })
 
     socket.on("genSongID", async (callback) => {

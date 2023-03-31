@@ -155,6 +155,6 @@ eventListen("userPageLoad", async () => {
 		})
 	}
 
-	var submissions = await JukeDB.SongDB.getUserSongs(userID)
+	var submissions = await JukeDB.SongDB.getPublicUserSongs(userID)
 	await submissions.asyncForEach(renderTrack)
 })

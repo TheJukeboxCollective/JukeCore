@@ -12,6 +12,8 @@ eventListen("battlePageLoad", async () => {
 	battleTitle.text = battleObj.title
 	battleDesc.text = battleObj.desc
 
+	document.title = `${battleObj.title} 🗡️ <JukeBattle>`
+
 
 	let voteTime = battleObj.endTime+((battleObj.endTime - battleObj.startTime)/2)
 	let submitCont = new Elem("file-upload-cont")
@@ -66,6 +68,7 @@ eventListen("battlePageLoad", async () => {
 		  }
 		  
 		  amountElem.textContent = voteCont.value
+		  voteCont.dispatchEvent(new Event("change"))
 		}
 
 		voteCont.appendChild(starCont)
@@ -110,6 +113,11 @@ eventListen("battlePageLoad", async () => {
 			var voteCont = new Elem("vote")
 			voteCont.setAttr("amount", 5)
 			loadVoteElem(voteCont.elem)
+			voteCont.on("change", async e => {
+				// show loading icon...
+				await socket.emitWithAck("updateVote", submission, localStorage.getItem("userID"), e.target.value)
+				// hide loading icon...
+			})
 			trackElem.addChild(voteCont)
 		}
 
@@ -299,6 +307,8 @@ eventListen("battlePageLoad", async () => {
 		STATE = "DONE"
 		battleStatus.setAttr("state", "complete")
 		tracksCont.style = ""
+		let submissions = await JukeDB.SongDB.getBattleSongs(battleID)
+		await submissions.asyncForEach(renderTrack)
 	}
 
 	// Ok, stop loading
