@@ -340,9 +340,39 @@ a {
     color: #454545;
 }
 
+vote {
+    display: grid;
+    grid-template-columns: 64px 48px 48px 48px 48px 48px 64px;
+    align-items: end;
+    justify-content: start;
+    align-content: center;
+    column-gap: 5px;
+}
+
 .star {
-  width: 32px;
-  fill: #6A31CA !important;
-  height: auto;
-  transform: scale(-1,1);
+    width: 48px;
+    fill: #6A31CA !important;
+    height: auto;
+    transform: scale(-1,1);
+    filter: invert(17%) sepia(51%) saturate(4840%) hue-rotate(257deg) brightness(100%) contrast(90%);
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.vote-label {
+    color: #ffffff5c;
+    font-family: 'Mid Card';
+    font-size: 32px;
+    margin-block: 0px;
+}
+
+.vote-loading {
+    width: 48px;
+    height: 48px;
+    animation: loading 1s infinite;
+    fill: #ffffff25;
+    /* margin-top: 100px; */
+    /* margin-left: calc(50% - (512px / 2)); */
+    top: 3px;
+    position: relative;
 }

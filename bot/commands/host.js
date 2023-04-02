@@ -34,6 +34,7 @@ command.addIntegerOption(option => option.setName("duration")
 		choice(2),
 		choice(3),
 		choice(4),
+		choice(10),
 	)
 	.setRequired(true)
 )
@@ -41,6 +42,7 @@ command.addIntegerOption(option => option.setName("duration")
 command.addStringOption(option => option.setName('unit')
 	.setDescription("What unit of time to use")		
 	.addChoices(
+		choice("seconds"),
 		choice("hours"),
 		choice("days"),
 		choice("weeks"),

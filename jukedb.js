@@ -241,19 +241,27 @@
             // ...
         }
 
+        async _newEntry(id) {
+            var exists = await this.exists(id)
+            if (!exists) {
+                var def = this.default()
+                def._id = id
+                await this._db.insertAsync(def)
+                print(`New Entry on ${this._name}.db:`, def)
+            }
+            return exists
+        }
+
         async set(id, key, value) {
             var setter = {}
             setter[key] = value
-            print(setter)
 
-            if (!await this.exists(id)) {var def = this.default(); def._id = id; print(def); await this._db.insertAsync(def)}
+            await this._newEntry(id)
             var res = await this._db.updateAsync({ _id: id }, { $set: setter })
-            print(res)
         }
 
         async setUp(id, obj) {
             var exists = await this.exists(id)
-            print(exists)
 
             var currObj;
             if (!exists) {
@@ -268,8 +276,6 @@
                 currObj[key] = val
             })
 
-            print(currObj)
-
             var doc;
             if (!exists) {
                 doc = await this._db.insertAsync(currObj)
@@ -281,29 +287,26 @@
         }
 
         async setOnObj(id, key, objKey, value) {
-            var exists = await this.exists(id)
-                print(exists)
-            if (!exists) {var def = this.default(); def._id = id; await this._db.insertAsync(def)}
+            await this._newEntry(id)
 
             var setter = {}
             var thisGuy = await this.get(id)
-            print(thisGuy)
             var objSetter = thisGuy[key]
             objSetter[objKey] = value
             setter[key] = objSetter
-            print(setter)
 
             var res = await this._db.updateAsync({ _id: id }, { $set: setter })
-            print(res)
         }
 
         async add(id, key, value) {
+            await this._newEntry(id)
             var obj = await this.get(id)
             let newValue = (obj[key]+value)
             await this.set(id, key, newValue)
         }
 
         async sub(id, key, value) {
+            await this._newEntry(id)
             var obj = await this.get(id)
             let newValue = (obj[key]-value)
             await this.set(id, key, newValue)
@@ -312,14 +315,14 @@
         async push(id, key, value) {
             var setter = {}
             setter[key] = value
-            if (!this.exists(id)) {var def = this.default(); def._id = id; await this._db.insertAsync(def)}
+            await this._newEntry(id)
             await this._db.updateAsync({ _id: id }, { $push: setter })
         }
 
         async pull(id, key, value) {
             var setter = {}
             setter[key] = value
-            if (!this.exists(id)) {var def = this.default(); def._id = id; await this._db.insertAsync(def)}
+            await this._newEntry(id)
             await this._db.updateAsync({ _id: id }, { $pull: setter })
         }
 
@@ -336,11 +339,11 @@
 
         async exists(id) {
             var count = await this._db.count({_id: id})
-            print(count)
-            return (count > 0)
+            // print(count)
+            return (count != 0)
         }
 
-        async match(func) {
+        match(func) {
             var retArr = []
             var Objs = this._db.getAllData()
 
@@ -396,8 +399,14 @@
 
     BattleDB.getActive = async () => {
         return BattleDB.match(obj => {
-            print(obj)
             return (Date.now() < obj.endTime)
+        })
+    }
+
+    BattleDB.getUncomplete = () => {
+        return BattleDB.match(battleObj => {
+            var voteTime = battleObj.endTime+((battleObj.endTime - battleObj.startTime)/2)
+            return (Date.now() < voteTime)
         })
     }
 
@@ -412,7 +421,6 @@
                 var battleObj = (battleCache.hasOwnProperty(obj.battleID) ? battleCache[obj.battleID] : await BattleDB.get(obj.battleID))
                 if (battleCache[obj.battleID] == null) { battleCache[obj.battleID] = battleObj }
                 var voteTime = (battleObj.endTime+((battleObj.endTime - battleObj.startTime)/2))
-                print(Date.now(), " > ", voteTime)
                 return (Date.now() > voteTime)
             } else {
                 return false

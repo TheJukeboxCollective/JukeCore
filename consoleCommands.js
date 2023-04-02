@@ -1,5 +1,7 @@
 const print = console.log
 
+const JukeUtils = require("./jukeutils.js")
+
 const GUILD_ID = process.env['guild']
 const JUKEBOXER_ROLE = process.env['jukeboxer_role']
 
@@ -35,6 +37,11 @@ readline.on("line", input => {
 module.exports = (client) => {
 	new ConsoleCommand("ping", (args) => {
 		print("pong!")
+	})
+
+	new ConsoleCommand("exec", (args) => {
+		var js = args.join(" ")
+		new Function(js)()
 	})
 
 	new ConsoleCommand("jukedm", async (args) => {

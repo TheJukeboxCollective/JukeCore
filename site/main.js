@@ -255,35 +255,79 @@ module.exports = (client) => {
       // }
     })
 
-    socket.on("discord", (access_token, method, path, data, callback) => {
-      let opts = {
-        headers: {
-          Authorization: `Bearer ${access_token}`
+    var DiscordAPI = {
+      _token: null,
+      _baseRequest: async function(method, path, data) {
+        let opts = {
+          headers: {
+            Authorization: `Bearer ${this._token}`
+          }
         }
-      }
 
-      if (data) {
-        opts["json"] = data
-      }
+        if (data) {
+          opts["json"] = data
+        }
 
-      print(opts)
+        let res = request(method.toUpperCase(), `${DISCORD_API}/${path}`, opts)
 
-      let res = request(method.toUpperCase(), `${DISCORD_API}/${path}`, opts)
+        var resText;
 
-      var resText;
+        try {
+          resText = res.getBody("utf-8")
+        } catch (err) {
+          resText = err  
+          print(resText)
+        }
 
-      try {
-        resText = res.getBody("utf-8")
-      } catch (err) {
-        resText = err  
-        print(resText)
-      }
+        if (typeof resText == "string") {
+          return (JSON.parse(resText))
+        } else {
+          return (null)
+        }
+      },
+      get: async function(path) {
+        return await this._baseRequest("get", path, null)
+      },
+      post: async function(path, data) {
+        return await this._baseRequest("post", path, data)
+      },
+      init: function(token) {
+        this._token = token
+      },
+    }
 
-      if (typeof resText == "string") {
-        callback(JSON.parse(resText))
-      } else {
-        callback(null)
-      }
+    socket.on("discord", async (access_token, method, path, data, callback) => {
+      DiscordAPI.init(access_token)
+      var res = await DiscordAPI[method](path, data)
+      callback(res)
+      // let opts = {
+      //   headers: {
+      //     Authorization: `Bearer ${access_token}`
+      //   }
+      // }
+
+      // if (data) {
+      //   opts["json"] = data
+      // }
+
+      // print(opts)
+
+      // let res = request(method.toUpperCase(), `${DISCORD_API}/${path}`, opts)
+
+      // var resText;
+
+      // try {
+      //   resText = res.getBody("utf-8")
+      // } catch (err) {
+      //   resText = err  
+      //   print(resText)
+      // }
+
+      // if (typeof resText == "string") {
+      //   callback(JSON.parse(resText))
+      // } else {
+      //   callback(null)
+      // }
     })
 
     // Symbol used to mark already visited nodes - helps with circular dependencies
@@ -516,6 +560,27 @@ module.exports = (client) => {
     })
     socket.emit("jukedb_info", infoDBs)
 
+    var rawLocalUtils = ["avgVotes", "sortPlacings", "calcVoteTime"]
+    var localUtils = rawLocalUtils.map(method => ({
+      remote: false,
+      method: method,
+      funcString: JukeUtils[method].toString(),
+    }))
+    var rawRemoteUtils = ["validID"]
+    var remoteUtils = rawRemoteUtils.map(method => ({
+      remote: true,
+      method: method,
+    }))
+    socket.emit("jukeutils_info", localUtils.concat(remoteUtils))
+
+    socket.on("jukeutils", async (method, args, callback) => {
+      if (rawRemoteUtils.includes(method)) {
+        callback(await JukeUtils[method](...args))
+      } else {
+        callback(null)
+      }
+    })
+
     const public_envs = ["guild", "pc_chl", "s_chl"]
     var thing_envs = []
     public_envs.forEach(env => {
@@ -536,7 +601,7 @@ module.exports = (client) => {
         case "start":
           // print(songID, event.songTitle, event)
           var thisPath = path.join(serverPath, `/${event.battleID}/${songID}`)
-          print(thisPath)
+          // print(thisPath)
           delete event["type"]
 
           await fs.ensureFile(thisPath)
@@ -580,7 +645,7 @@ module.exports = (client) => {
 
           /// File Duplicates
           var duplicates = await fd.find(thisPath, "")
-          print(duplicates)
+          // print(duplicates)
           if (duplicates.length >= 1) {
             errors.push({type: "DUPE", paths: duplicates})
             await fs.remove(thisPath)
@@ -596,7 +661,7 @@ module.exports = (client) => {
             await SongDB.setUp(songID, thisUpload.startEvent)
           }
 
-          print("DONE", errors)
+          // print("DONE", errors)
 
           callback(errors)
         break;
@@ -604,27 +669,46 @@ module.exports = (client) => {
     })
 
     var votePromises = {}
-    socket.on("updateVote", async (song, voterID, voteValue, callback) => {
+    var accessStore = new Map()
+    socket.on("updateVote", async (song, voterToken, voteValue, callback) => {
+      var voterID;
+      if (!accessStore.has(voterToken)) {
+        DiscordAPI.init(voterToken)
+        var res = await DiscordAPI.get("users/@me")
+        voterID = res.id
+      } else {
+        voterID = accessStore.get(voterToken)
+      }
+
       var {SongDB} = JukeDB
       var ID = `${song._id}-${voterID}`
 
       const exec = async (ID, func) => {
         if (votePromises[ID].size > 0) {
           await func()
-          var Iter = votePromises[ID].keys()
-          votePromises[ID].delete(thisFunc)
-          if (votePromises[ID].size == 0) {
-            delete votePromises[ID]
-          } else {
-            exec(ID, Iter.next().value)
-          } 
+          callback(0)
+          socket.emit("updateVote", 0)
+          if (votePromises[ID]) {
+            var Iter = votePromises[ID].keys()
+            votePromises[ID].delete(thisFunc)
+            if (votePromises[ID].size == 0) {
+              delete votePromises[ID]
+            } else {
+              exec(ID, Iter.next().value)
+            }
+          }
         }
       }
 
-      if (votePromises[ID] == null) { votePromises[ID] = new Set() }
-      var thisFunc = SongDB.setOnObj.bind(SongDB, song._id, "votes", voterID, voteValue)
-      votePromises[ID].add(thisFunc)
-      exec(ID, thisFunc)
+      if (!song.authors.includes(voterID)) {
+        if (votePromises[ID] == null) { votePromises[ID] = new Set() }
+        var thisFunc = SongDB.setOnObj.bind(SongDB, song._id, "votes", voterID, voteValue)
+        votePromises[ID].add(thisFunc)
+        exec(ID, thisFunc) 
+      } else {
+        callback(1)
+        socket.emit("updateVote", 1)
+      }
     })
 
     socket.on("genSongID", async (callback) => {

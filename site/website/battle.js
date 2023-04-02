@@ -35,52 +35,79 @@ eventListen("battlePageLoad", async () => {
 		}
 	}
 
-	function loadVoteElem(voteCont) {
+	function loadVoteElem(voteCont, value, nochange = false) {
 		var amount = Number(voteCont.getAttribute("amount"))
 		var amountElem = document.createElement('p')
-		amountElem.textContent = 0
+		amountElem.textContent = (0).toFixed(2)
+		amountElem.classList.add("vote-label")
 
 		function spawnStar(thisInd) {
-		var starCont = document.createElement("img")
-		starCont.classList.add("star")
-		starCont.src = "https://www.svgrepo.com/download/172818/star-outline.svg"
+			var starCont = document.createElement("img")
+			starCont.classList.add("star")
+			starCont.src = "https://www.svgrepo.com/download/172818/star-outline.svg"
 
-		starCont.onclick = event => {
-		  if (event.offsetX < (event.target.offsetWidth/2)) {
-		    event.target.src = "https://www.svgrepo.com/download/110699/star-black-shape-of-favourite-interface-symbol.svg"
-		    voteCont.value = (thisInd + 1)
-		  } else if (event.offsetX < (event.target.offsetWidth/4)*3) {
-		    event.target.src = "https://www.svgrepo.com/download/174637/star-half-empty.svg"
-		    voteCont.value = (thisInd + 0.5)
-		  } else {
-		    event.target.src = "https://www.svgrepo.com/download/172818/star-outline.svg"
-		    voteCont.value = (thisInd)
-		  }
-		  
-		  var starChilds = Array.from(voteCont.children).filter(elem => elem.tagName == "IMG")
-		  // Stars in front...
-		  for (var o = (thisInd+1); o < amount; o++) {
-		    starChilds[o].src = "https://www.svgrepo.com/download/172818/star-outline.svg"
-		  }
-		  // Stars in behind...
-		  for (var o = 0; o < thisInd; o++) {
-		    starChilds[o].src = "https://www.svgrepo.com/download/110699/star-black-shape-of-favourite-interface-symbol.svg"
-		  }
-		  
-		  amountElem.textContent = voteCont.value
-		  voteCont.dispatchEvent(new Event("change"))
+			if (!nochange) {
+				if (value != -1) {
+					starCont.onclick = event => {
+					  if (event.offsetX < (event.target.offsetWidth/2)) {
+					    event.target.src = "https://www.svgrepo.com/download/110699/star-black-shape-of-favourite-interface-symbol.svg"
+					    voteCont.value = (thisInd + 1)
+					  } else if (event.offsetX < (event.target.offsetWidth/4)*3) {
+					    event.target.src = "https://www.svgrepo.com/download/174637/star-half-empty.svg"
+					    voteCont.value = (thisInd + 0.5)
+					  } else {
+					    event.target.src = "https://www.svgrepo.com/download/172818/star-outline.svg"
+					    voteCont.value = (thisInd)
+					  }
+					  
+					  var starChilds = Array.from(voteCont.children).filter(elem => elem.tagName == "IMG")
+					  // Stars in front...
+					  for (var o = (thisInd+1); o < amount; o++) {
+					    starChilds[o].src = "https://www.svgrepo.com/download/172818/star-outline.svg"
+					  }
+					  // Stars in behind...
+					  for (var o = 0; o < thisInd; o++) {
+					    starChilds[o].src = "https://www.svgrepo.com/download/110699/star-black-shape-of-favourite-interface-symbol.svg"
+					  }
+					  
+					  amountElem.textContent = voteCont.value.toFixed(2)
+					  voteCont.dispatchEvent(new Event("change"))
+					}
+				} else {
+					starCont.onclick = event => {
+					  alert("You can't vote on your own track!")
+					}
+				}
+			}
+
+			voteCont.value = (value == -1 ? 0 : value)
+			amountElem.textContent = (value == -1 ? 0 : value).toFixed(2)
+			switch (true) {
+				case (value == (thisInd+0.5)):
+					starCont.src = "https://www.svgrepo.com/download/174637/star-half-empty.svg"
+				break;
+				case (value >= (thisInd+1)):
+					starCont.src = "https://www.svgrepo.com/download/110699/star-black-shape-of-favourite-interface-symbol.svg"
+				break;
+			}
+
+			voteCont.appendChild(starCont)
 		}
 
-		voteCont.appendChild(starCont)
+		let loadingIcon = document.createElement("svg")
 		voteCont.appendChild(amountElem)
-		}
 
 		for (var i = 0; i < amount; i++) { spawnStar(i) }
+
+		voteCont.appendChild(loadingIcon)
+		loadingIcon.outerHTML = (`<svg style="display: none;" class="vote-loading" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>loading</title><path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" /></svg>`)
 	}
 
 	async function renderTrack(submission) {
 		print("rendering...", submission)
 		var trackElem = new Elem("div")
+		trackElem.classes.add("track")
+		trackElem.setAttr("state", STATE.toLowerCase())
 		var trackTitleElem = new Elem("p")
 		var trackAudioCont = new Elem("div")
 		var trackAudioElem = new Elem("audio")
@@ -109,15 +136,23 @@ eventListen("battlePageLoad", async () => {
 		trackElem.addChild(trackTitleElem)
 		trackAudioCont.addChild(trackAudioElem)
 		trackElem.addChild(trackAudioCont)
-		if (STATE == "VOTE") {
+		if (STATE != "ACTIVE") {
 			var voteCont = new Elem("vote")
 			voteCont.setAttr("amount", 5)
-			loadVoteElem(voteCont.elem)
-			voteCont.on("change", async e => {
-				// show loading icon...
-				await socket.emitWithAck("updateVote", submission, localStorage.getItem("userID"), e.target.value)
-				// hide loading icon...
-			})
+
+			let voteVal = ((!submission.authors.includes(localStorage.getItem("userID"))) ? (submission.votes[localStorage.getItem("userID")] || 0) : -1 )
+			let doneVal = JukeUtils.avgVotes(submission.votes)
+			loadVoteElem(voteCont.elem, (STATE == "VOTE" ? voteVal : doneVal), (STATE == "DONE"))
+
+			if (STATE == "VOTE") {
+				voteCont.on("change", async e => {
+					var loadingIcon = e.target.querySelector('svg')
+
+					loadingIcon.style.removeProperty("display")
+					await socket.emitWithAck("updateVote", submission, JSON.parse(localStorage.getItem("access")).access_token, e.target.value)
+					loadingIcon.style.setProperty("display", "none")
+				})
+			}
 			trackElem.addChild(voteCont)
 		}
 
@@ -302,13 +337,14 @@ eventListen("battlePageLoad", async () => {
 		battleStatus.setAttr("state", "voting")
 		tracksCont.style = ""
 		let submissions = await JukeDB.SongDB.getBattleSongs(battleID)
+		submissions.sort((a, b) => (a.uploadDate - b.uploadDate))
 		await submissions.asyncForEach(renderTrack)
 	} else { //// COMPLETE ////
 		STATE = "DONE"
 		battleStatus.setAttr("state", "complete")
 		tracksCont.style = ""
 		let submissions = await JukeDB.SongDB.getBattleSongs(battleID)
-		await submissions.asyncForEach(renderTrack)
+		await JukeUtils.sortPlacings(submissions).asyncForEach(renderTrack)
 	}
 
 	// Ok, stop loading

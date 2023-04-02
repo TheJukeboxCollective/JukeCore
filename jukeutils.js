@@ -13,6 +13,8 @@ const ARCHJUKER_ROLE = process.env['archjuker_role']
 
 const LIKE_EMOTE = process.env['emoji_l']
 
+const JukeDB = require("./jukedb.js")
+
 function randi(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -27,28 +29,33 @@ function wait(time) {
 	})
 }
 
-module.exports = {
+const JukeUtils = {
 	coinToEmote: (str) => {
 		return {jukes: JUKE_EMOJI, boxes: BOX_EMOJI}[str.toLowerCase()]
 	},
 	validID: async (DataBase) => {
-		return new Promise((res, rej) => {
-			function genID() {
-				return Array(18).fill(0).map(num => randi(0, 9)).join("")
-			}
-
-			var retID;
-			async function check() {
-				retID = genID()
-				if (await DataBase.exists(retID)) {
-					await wait(1)
-					check()
-				} else {
-					res(retID)
+		if (typeof DataBase == "string") { DataBase = JukeDB[DataBase] }
+		if (DataBase) {
+			return new Promise((res, rej) => {
+				function genID() {
+					return Array(18).fill(0).map(num => randi(0, 9)).join("")
 				}
-			}
-			check()
-		})
+
+				var retID;
+				async function check() {
+					retID = genID()
+					if (await DataBase.exists(retID)) {
+						await wait(1)
+						check()
+					} else {
+						res(retID)
+					}
+				}
+				check()
+			})
+		} else {
+			return null
+		}
 	},
 	getBadges: member => {
 		let badges = []
@@ -99,5 +106,31 @@ module.exports = {
 	},
 	getPC: (userId, PCForum) => {
 		return (PCForum.threads.cache.find(thread => thread.ownerId == userId ))
-	}
+	},
+	calcVoteTime: (start, end) => {
+		const DIV = 2
+
+		return (end+((end-start)/DIV))
+	},
+	avgVotes: (votes) => {
+		var total = 0
+		var values = Object.values(votes)
+		values.forEach(value => {
+			total += value
+		})
+
+		return (total/values.length)
+	},
+	sortPlacings: (songs) => {
+		songs.sort((a, b) => {
+			var aVotesAvg = JukeUtils.avgVotes(a.votes)
+			var bVotesAvg = JukeUtils.avgVotes(b.votes)
+
+			return (bVotesAvg - aVotesAvg)
+		})
+
+		return songs
+	},
 }
+
+module.exports = JukeUtils

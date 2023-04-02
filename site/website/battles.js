@@ -49,13 +49,15 @@ eventListen("battlesPageLoad", async () => {
 		let voteTimeStamp = moment(voteTime).fromNow()
 		if (Date.now() < battleObj.endTime) {
 			battleTime.text = `Submissions due ${timeStamp}`
+			battleTime.setAttr("title", `${moment(battleObj.endTime).format('MMMM Do YYYY, h:mm a')}`)
 		} else if (Date.now() < voteTime) {
 			battleTime.text = `Voting due ${voteTimeStamp}`
+			battleTime.setAttr("title", `${moment(voteTime).format('MMMM Do YYYY, h:mm a')}`)
 		} else {
 			battleTime.text = `Battle ended ${timeStamp}`
+			battleTime.setAttr("title", `${moment(battleObj.endTime).format('MMMM Do YYYY, h:mm a')}`)
 		}
 		battleTime.classes.add("battle-time")
-		battleTime.setAttr("title", `Due Date: ${moment(battleObj.endTime).format('MMMM Do YYYY, h:mm a')}`)
 		battleTitle.addChild(battleTime)
 
 		battleCont.addChild(battleTitle)

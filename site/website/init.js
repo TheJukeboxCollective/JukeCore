@@ -173,12 +173,37 @@ socket.on("jukedb_info", DBs => {
 	})
 })
 
+var JukeUtils = {}
+
+socket.on("jukeutils_info", methods => {
+	methods.forEach(methodObj => {
+		var {method, funcString, remote} = methodObj
+		if (!remote) {
+			funcString = funcString.replace("function (", "function anonymous(")
+			// print(funcString)
+			JukeUtils[method] = eval(funcString)
+		} else {
+			JukeUtils[method] = (...args) => {
+				return socket.emitWithAck("jukeutils", method, [...args])
+			}
+		}
+	})
+})
+
 var ENV = {}
 
 socket.on("envs", envs => {
 	envs.forEach(env => {
 		ENV[env.key] = env.value
 	})
+})
+
+socket.on("updateVote", code => {
+	switch (code) {
+		case 1:
+			print("Stop tryna vote on yo own song, dirty hacker >:(")
+		break;
+	}
 })
 
 new Array("collective", "community").forEach(type => {
