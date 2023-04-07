@@ -152,7 +152,7 @@ module.exports = (client) => {
     var cookiesObj = {}
 
     /// Public Envs ///
-    const public_envs = ["client", "login_url", "guild", "pc_chl", "s_chl"]
+    const public_envs = ["client", "guild", "pc_chl", "s_chl"]
     cookiesObj.ENV = {}
     public_envs.forEach(env => {
       cookiesObj.ENV[env] = process.env[env]
