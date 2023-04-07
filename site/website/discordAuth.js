@@ -1,4 +1,3 @@
-window.onload = () => {
 (async () => {
 const print_debug = print
 
@@ -42,7 +41,7 @@ function loggedOut() {
 	print_debug("Logging Out...")
 	localStorage.removeItem("access")
 	profileStatus.html = "<a>Login in with Discord</a>"
-	profileStatus.children[0].href = ENV["login_url"]
+	profileStatus.children[0].href = `https://discord.com/api/oauth2/authorize?client_id=${ENV["client"]}&redirect_uri=${encodeURIComponent(thisUri)}&response_type=code&scope=guilds%20guilds.join%20identify`
 }
 
 if (localStorage.getItem("access") != null) {
@@ -68,4 +67,3 @@ if (localStorage.getItem("access") != null) {
 	}
 }
 })();
-}
