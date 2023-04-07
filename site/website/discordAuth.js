@@ -1,6 +1,5 @@
 (async () => {
 var thisUri = `http://${window.location.host}/home`
-var OAUTH_LINK = `https://discord.com/api/oauth2/authorize?client_id=${ENV["client"]}&redirect_uri=${encodeURI(thisUri)}&response_type=code&scope=guilds%20identify%20guilds.join`
 
 var profileStatus = new Elem("login-status")
 
@@ -35,7 +34,7 @@ async function loggedIn() {
 function loggedOut() {
 	localStorage.removeItem("access")
 	profileStatus.html = "<a>Login in with Discord</a>"
-	profileStatus.children[0].href = OAUTH_LINK
+	profileStatus.children[0].href = `https://discord.com/api/oauth2/authorize?client_id=${ENV["client"]}&redirect_uri=${encodeURI(thisUri)}&response_type=code&scope=guilds%20identify%20guilds.join`
 }
 
 if (localStorage.getItem("access") != null) {
