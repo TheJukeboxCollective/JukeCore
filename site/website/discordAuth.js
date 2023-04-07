@@ -1,6 +1,6 @@
 (async () => {
 var thisUri = `http://${window.location.host}/home`
-var OAUTH_LINK = `https://discord.com/api/oauth2/authorize?client_id=1086267936018284607&redirect_uri=${encodeURI(thisUri)}&response_type=code&scope=guilds%20identify%20guilds.join`
+var OAUTH_LINK = `https://discord.com/api/oauth2/authorize?client_id=${ENV["client"]}&redirect_uri=${encodeURI(thisUri)}&response_type=code&scope=guilds%20identify%20guilds.join`
 
 var profileStatus = new Elem("login-status")
 

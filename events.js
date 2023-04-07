@@ -49,9 +49,9 @@ Eventer.on("battleEnd", async battleObj => {
 	var secondPlace = songs[1]
 	var thirdPlace = songs[2]
 
-	firstPlace.authors.forEach(author => setPlace(author, "golds"))
-	secondPlace.authors.forEach(author => setPlace(author, "silvers"))
-	thirdPlace.authors.forEach(author => setPlace(author, "bronzes"))
+	if (firstPlace) { firstPlace.authors.forEach(author => setPlace(author, "golds")) }
+	if (secondPlace) { secondPlace.authors.forEach(author => setPlace(author, "silvers")) }
+	if (thirdPlace) { thirdPlace.authors.forEach(author => setPlace(author, "bronzes")) }
 
 	print(`Battle "${battleObj.title}" Ended!\nResults:`)
 	print(songs.map((song, ind) => `(${ind+1}) ${song.authors.join(", ")} - ${song.title}: ${JukeUtils.avgVotes(song.votes)}`).join("\n"))

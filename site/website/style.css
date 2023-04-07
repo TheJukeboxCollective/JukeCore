@@ -342,7 +342,7 @@ a {
 
 vote {
     display: grid;
-    grid-template-columns: 64px 48px 48px 48px 48px 48px 64px;
+    grid-template-columns: 64px 48px 48px 48px 48px 48px 48px 48px 64px;
     align-items: end;
     justify-content: start;
     align-content: center;

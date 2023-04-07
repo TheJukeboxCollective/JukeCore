@@ -138,7 +138,7 @@ eventListen("battlePageLoad", async () => {
 		trackElem.addChild(trackAudioCont)
 		if (STATE != "ACTIVE") {
 			var voteCont = new Elem("vote")
-			voteCont.setAttr("amount", 5)
+			voteCont.setAttr("amount", 7)
 
 			let voteVal = ((!submission.authors.includes(localStorage.getItem("userID"))) ? (submission.votes[localStorage.getItem("userID")] || 0) : -1 )
 			let doneVal = JukeUtils.avgVotes(submission.votes)

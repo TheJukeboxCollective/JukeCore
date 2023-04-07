@@ -209,7 +209,7 @@ module.exports = (client) => {
       }
     })
 
-    socket.on('userObj', (access_token, callback) => {
+    socket.on('userObj', (access_token, callback = (()=>{})) => {
       let res = request("GET", `https://discord.com/api/v9/users/@me`, {
         headers: {
           Authorization: `Bearer ${access_token}`
@@ -221,7 +221,7 @@ module.exports = (client) => {
 
     const DISCORD_API = `https://discord.com/api/v9`
 
-    socket.on("joinUser", async (userId, access_token, callback) => {
+    socket.on("joinUser", async (userId, access_token, callback = (()=>{})) => {
       try {
         let res = await rest.put(`/guilds/${process.env['guild']}/members/${userId}`, {
           body: { access_token: access_token }
@@ -296,7 +296,7 @@ module.exports = (client) => {
       },
     }
 
-    socket.on("discord", async (access_token, method, path, data, callback) => {
+    socket.on("discord", async (access_token, method, path, data, callback = (()=>{})) => {
       DiscordAPI.init(access_token)
       var res = await DiscordAPI[method](path, data)
       callback(res)
@@ -448,7 +448,7 @@ module.exports = (client) => {
     }
 
     var bot_methods = ["user", "channel", "message", "userPageInfo", "getBadges", "getPC", "getTier", "getLikes", "getMembers", ["guild", process.env['guild']]]
-    socket.on("jukebot", async (method, args, callback) => {
+    socket.on("jukebot", async (method, args, callback = (()=>{})) => {
       switch (method) {
         case 'user':
           var user;
@@ -538,14 +538,6 @@ module.exports = (client) => {
     })
     socket.emit("jukebot_info", bot_methods)
 
-    socket.on("jukedb", async (DB, method, args, callback) => {
-      // args.map(arg => {
-      //   print(arg)
-      // })
-      var res = await JukeDB[DB][method](...args)
-      callback(res)
-    })
-
     var infoDBs = []
     var validMethods = {
       "MemberDB": ["validBadges"],
@@ -557,6 +549,18 @@ module.exports = (client) => {
         title: DB_title,
         methods: ["get", "getAll", "match", "has", "exists"].concat(validMethods[DB_title] || [])
       })
+    })
+    socket.on("jukedb", async (DB, method, args, callback = (()=>{})) => {
+      // args.map(arg => {
+      //   print(arg)
+      // })
+      var infoDB = infoDBs.find(i => i.title == DB)
+      if (infoDB != null && infoDB.methods.includes(method)) {
+        var res = await JukeDB[DB][method](...args)
+        callback(res)
+      } else {
+        callback(null)
+      }
     })
     socket.emit("jukedb_info", infoDBs)
 
@@ -573,7 +577,7 @@ module.exports = (client) => {
     }))
     socket.emit("jukeutils_info", localUtils.concat(remoteUtils))
 
-    socket.on("jukeutils", async (method, args, callback) => {
+    socket.on("jukeutils", async (method, args, callback = (()=>{})) => {
       if (rawRemoteUtils.includes(method)) {
         callback(await JukeUtils[method](...args))
       } else {
@@ -581,7 +585,7 @@ module.exports = (client) => {
       }
     })
 
-    const public_envs = ["guild", "pc_chl", "s_chl"]
+    const public_envs = ["client", "guild", "pc_chl", "s_chl"]
     var thing_envs = []
     public_envs.forEach(env => {
       thing_envs.push({
@@ -593,7 +597,7 @@ module.exports = (client) => {
 
     var activeUploads = {}
     // uploadId = 0
-    socket.on("uploadSong", async (songID, event, callback) => {
+    socket.on("uploadSong", async (songID, event, callback = (()=>{})) => {
       const {SongDB} = JukeDB
       var thisUpload = activeUploads[songID]
       // print(event)
@@ -670,7 +674,7 @@ module.exports = (client) => {
 
     var votePromises = {}
     var accessStore = new Map()
-    socket.on("updateVote", async (song, voterToken, voteValue, callback) => {
+    socket.on("updateVote", async (song, voterToken, voteValue, callback = (()=>{})) => {
       var voterID;
       if (!accessStore.has(voterToken)) {
         DiscordAPI.init(voterToken)
@@ -711,7 +715,7 @@ module.exports = (client) => {
       }
     })
 
-    socket.on("genSongID", async (callback) => {
+    socket.on("genSongID", async (callback = (()=>{})) => {
       let songID = await JukeUtils.validID(JukeDB["SongDB"])
       callback(songID)
     })

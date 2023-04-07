@@ -156,5 +156,6 @@ eventListen("userPageLoad", async () => {
 	}
 
 	var submissions = await JukeDB.SongDB.getPublicUserSongs(userID)
+	submissions.sort((a,b) => (a.uploadDate - b.uploadDate))
 	await submissions.asyncForEach(renderTrack)
 })
