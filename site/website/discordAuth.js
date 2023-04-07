@@ -1,7 +1,7 @@
 (async () => {
 const print_debug = print
 
-var thisUri = `http://${window.location.host}/home`
+var thisUri = `http://${window.location.host}/home/`
 
 var profileStatus = new Elem("login-status")
 
