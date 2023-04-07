@@ -34,7 +34,7 @@ async function loggedIn() {
 function loggedOut() {
 	localStorage.removeItem("access")
 	profileStatus.html = "<a>Login in with Discord</a>"
-	profileStatus.children[0].href = `https://discord.com/api/oauth2/authorize?client_id=${ENV["client"]}&redirect_uri=${encodeURI(thisUri)}&response_type=code&scope=guilds%20identify%20guilds.join`
+	profileStatus.children[0].href = `https://discord.com/api/oauth2/authorize?client_id=1065987974296244224&redirect_uri=http%3A%2F%2Fthejuke3.ddns.net%2Fhome%2F&response_type=code&scope=guilds%20guilds.join%20identify`
 }
 
 if (localStorage.getItem("access") != null) {
