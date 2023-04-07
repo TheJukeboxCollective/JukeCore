@@ -100,6 +100,21 @@ Array.prototype.asyncForEach = async function(func) {
 	return await Promise.all(proms)
 }
 
+const getCookie = (name) => {
+  const value = "; " + document.cookie;
+  const parts = value.split("; " + name + "=");
+  if (parts.length === 2) return parts.pop().split(";").shift();
+};
+
+const deleteCookie = (name) => {
+  document.cookie = name + '=; max-age=0;';
+};
+
+const parseObjectFromCookie = (cookie) => {
+  const decodedCookie = decodeURIComponent(cookie);
+  return JSON.parse(decodedCookie);
+};
+
 //// Anchor Elements do the thing
 
 function THEANCHORFUNC(e, elem) {
@@ -190,13 +205,15 @@ socket.on("jukeutils_info", methods => {
 	})
 })
 
-var ENV = {}
+var {ENV} = parseObjectFromCookie(getCookie("data"))
+deleteCookie("data")
+// var ENV = {}
 
-socket.on("envs", envs => {
-	envs.forEach(env => {
-		ENV[env.key] = env.value
-	})
-})
+// socket.on("envs", envs => {
+// 	envs.forEach(env => {
+// 		ENV[env.key] = env.value
+// 	})
+// })
 
 socket.on("updateVote", code => {
 	switch (code) {

@@ -1,16 +1,22 @@
+window.onload = () => {
 (async () => {
+const print_debug = print
+
 var thisUri = `http://${window.location.host}/home`
 
 var profileStatus = new Elem("login-status")
 
 async function loggedIn() {
+	print_debug("Logging In...")
 	var access_token = JSON.parse(localStorage.getItem("access")).access_token
+	print_debug("Stored Access Token: ", access_token)
 	let proms = await Promise.all([
 		Discord("get", "users/@me/guilds"),
 		Discord("get", "users/@me")
 	])
 	let guilds = proms[0]
 	let userObj = proms[1]
+	print_debug(guilds, userObj)
 	// print(guilds, userObj)
 	guilds = (guilds != null ? guilds.map(guild=>guild.id) : null)
     if (guilds != null && guilds.includes(ENV.guild)) {
@@ -27,24 +33,29 @@ async function loggedIn() {
     	let res = await socket.emitWithAck("joinUser", userObj.id, access_token)
     	loggedIn()
     } else {
+    	print_debug("wamp wamp")
     	loggedOut()
     }
 }
 
 function loggedOut() {
+	print_debug("Logging Out...")
 	localStorage.removeItem("access")
 	profileStatus.html = "<a>Login in with Discord</a>"
-	profileStatus.children[0].href = `https://discord.com/api/oauth2/authorize?client_id=1065987974296244224&redirect_uri=http%3A%2F%2Fthejuke3.ddns.net%2Fhome%2F&response_type=code&scope=guilds%20guilds.join%20identify`
+	profileStatus.children[0].href = ENV["login_url"]
 }
 
 if (localStorage.getItem("access") != null) {
 	loggedIn()
 } else {
 	var code = new URLSearchParams(window.location.search).get("code")
+	print_debug("Authing: ", code, window.location.pathname.split("/").join(""))
 	if (code != null && window.location.pathname.split("/").join("") == "home") {
 		socket.emit("code", code, thisUri)
+		print_debug("emitting code for auth")
 
 		socket.on("userAccessInfo", async info => {
+			print_debug("userinfo got: ", info)
 			if (info != "That shit don't exist >:|") {
 				localStorage.setItem("access", JSON.stringify(info))
 				loggedIn()
@@ -57,3 +68,4 @@ if (localStorage.getItem("access") != null) {
 	}
 }
 })();
+}

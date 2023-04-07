@@ -124,6 +124,9 @@ module.exports = (client) => {
     app.use(urlPath, express.static(badgePath, {index: false}))
 
     app.get(urlPath, (req, res) => {
+      var cookies = genCookies()
+      print(cookies)
+      res.cookie("data", cookies)
       res.sendFile('/index.html', {root: path.resolve(__dirname, "../")});
     })
   }
@@ -144,6 +147,19 @@ module.exports = (client) => {
         setupPath(urlPath)
     }
   })
+
+  function genCookies() {
+    var cookiesObj = {}
+
+    /// Public Envs ///
+    const public_envs = ["client", "login_url", "guild", "pc_chl", "s_chl"]
+    cookiesObj.ENV = {}
+    public_envs.forEach(env => {
+      cookiesObj.ENV[env] = process.env[env]
+    })
+
+    return JSON.stringify(cookiesObj)
+  }
 
   app.get("/", (req, res) => {
     res.redirect('/home')
@@ -584,16 +600,6 @@ module.exports = (client) => {
         callback(null)
       }
     })
-
-    const public_envs = ["client", "guild", "pc_chl", "s_chl"]
-    var thing_envs = []
-    public_envs.forEach(env => {
-      thing_envs.push({
-        key: env,
-        value: process.env[env],
-      })
-    })
-    socket.emit("envs", thing_envs)
 
     var activeUploads = {}
     // uploadId = 0
