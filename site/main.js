@@ -30,6 +30,42 @@ var {REST} = require('@discordjs/rest')
 
 var rest = new REST({ version: '10' }).setToken(process.env['token'])
 
+class Notion {
+  constructor(token) {
+    this._token = token
+    this._api_host = "https://api.notion.com/v1/"
+  }
+
+  _baseRequest(method, path, data = {}) {
+    try {
+      var res = request(method, (this._api_host+path), {
+        headers: {
+          "Authorization": `Bearer ${this._token}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        json: data,
+      })
+
+      return JSON.parse(res.getBody("utf8"))
+    } catch (err) {
+      print(err)
+      return null
+    }
+
+  }
+
+  get(path) {
+    return this._baseRequest("GET", path)
+  }
+
+  post(path, data = {}) {
+    return this._baseRequest("POST", path, data)
+  }
+}
+
+var notion = new Notion(process.env["notion"])
+
 //// Page Handling ////
 
 const PAGES = {
@@ -38,9 +74,9 @@ const PAGES = {
   "BATTLE": "battle",
   "USER": "user*",
   "NEWS": "news",
-  "COLLECTIVE": "collective",
-  "COMMUNITY": "community",
   "ABOUT": "home",
+  "RELEASES": "releases",
+  "RELEASE": "release*",
   "ALBUMS/PKMN-MM-2022": "pkmn-mm-2022",
 }
 
@@ -125,7 +161,6 @@ module.exports = (client) => {
 
     app.get(urlPath, (req, res) => {
       var cookies = genCookies()
-      print(cookies)
       res.cookie("data", cookies)
       res.sendFile('/index.html', {root: path.resolve(__dirname, "../")});
     })
@@ -724,6 +759,29 @@ module.exports = (client) => {
     socket.on("genSongID", async (callback = (()=>{})) => {
       let songID = await JukeUtils.validID(JukeDB["SongDB"])
       callback(songID)
+    })
+
+    socket.on("getReleases", async (callback) => {
+      var releases_entires = notion.post("databases/89519338a7f0454d83810c89e005163d/query")
+
+      callback(releases_entires.results)
+    })
+
+    socket.on("getRelease", async (code, callback) => {
+      var releases_entires = notion.post("databases/89519338a7f0454d83810c89e005163d/query", {
+        filter: {
+          property: "Code",
+          rich_text: {equals: code},
+        }
+      })
+
+      callback(releases_entires.results[0])
+    })
+
+    socket.on("getNotionMember", async (id, callback) => {
+      var member = notion.get("pages/"+id)
+
+      callback(member)
     })
   })
 
