@@ -114,7 +114,7 @@ eventListen("battlePageLoad", async () => {
 
 		var authors = [];
 		print(submission.authors)
-		await submission.authors.asyncForEach(async author => {
+		await submission.authors.awaitForEach(async author => {
 			print(author)
 
 			var res = await getUserInfo(author)
@@ -176,7 +176,7 @@ eventListen("battlePageLoad", async () => {
 
 		let submissions = await JukeDB.SongDB.getUserBattleSongs(localStorage.getItem("userID"), battleID)
 		if (submissions.length > 0) {tracksCont.style.removeProperty("display"); new Elem("tracks-header").text = "Your Submitted Tracks:"}
-		await submissions.asyncForEach(renderTrack)
+		await submissions.awaitForEach(renderTrack)
 
 		// SUBMIT THE FILE LES GOO
 		let titleInput = new Elem("song-title-input")
@@ -338,19 +338,19 @@ eventListen("battlePageLoad", async () => {
 		tracksCont.style = ""
 		let submissions = await JukeDB.SongDB.getBattleSongs(battleID)
 		submissions.sort((a, b) => (a.uploadDate - b.uploadDate))
-		await submissions.asyncForEach(renderTrack)
+		await submissions.awaitForEach(renderTrack)
 	} else { //// COMPLETE ////
 		STATE = "DONE"
 		battleStatus.setAttr("state", "complete")
 		tracksCont.style = ""
 		let submissions = await JukeDB.SongDB.getBattleSongs(battleID)
-		await JukeUtils.sortPlacings(submissions).asyncForEach(renderTrack)
+		await JukeUtils.sortPlacings(submissions).awaitForEach(renderTrack)
 	}
 
 	// Ok, stop loading
 	let loadingIcon = new Elem("loading-icon")
 	loadingIcon.style = "display: none;"
 
-	let loadConetnt = new Elem("load-content")
-	loadConetnt.style = ""
+	let loadContent = new Elem("load-content")
+	loadContent.style = ""
 })

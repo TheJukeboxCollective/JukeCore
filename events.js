@@ -53,6 +53,6 @@ Eventer.on("battleEnd", async battleObj => {
 	if (secondPlace) { secondPlace.authors.forEach(author => setPlace(author, "silvers")) }
 	if (thirdPlace) { thirdPlace.authors.forEach(author => setPlace(author, "bronzes")) }
 
-	print(`Battle "${battleObj.title}" Ended!\nResults:`)
-	print(songs.map((song, ind) => `(${ind+1}) ${song.authors.join(", ")} - ${song.title}: ${JukeUtils.avgVotes(song.votes)}`).join("\n"))
+	log(`Battle "${battleObj.title}" Ended!\nResults:`)
+	log(songs.map((song, ind) => `(${ind+1}) ${song.authors.join(", ")} - ${song.title}: ${JukeUtils.avgVotes(song.votes)}`).join("\n"))
 })

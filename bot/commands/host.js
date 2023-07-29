@@ -1,4 +1,3 @@
-const print = console.log
 const { SlashCommandBuilder } = require('discord.js')
 const { MemberDB, ChannelDB, BattleDB } = require("../../jukedb.js")
 const JukeUtils = require("../../jukeutils.js")

@@ -1,4 +1,3 @@
-const print = console.log
 const gsheetdb = require('./gsheetdb.js')
 const SHEET_ID = process.env['sheet']
 const SCRIPT_ID = process.env['script']

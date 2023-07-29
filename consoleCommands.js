@@ -1,5 +1,3 @@
-const print = console.log
-
 const JukeUtils = require("./jukeutils.js")
 
 const GUILD_ID = process.env['guild']

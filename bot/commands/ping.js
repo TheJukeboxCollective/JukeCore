@@ -1,4 +1,3 @@
-const print = console.log
 const { SlashCommandBuilder } = require('discord.js')
 
 const COMMAND_INFO = {

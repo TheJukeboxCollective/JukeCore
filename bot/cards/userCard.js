@@ -1,5 +1,3 @@
-const print = console.log
-
 //// Env
 const GUILD_ID = process.env['guild']
 const PC_CHANNEL = process.env['pc_chl']

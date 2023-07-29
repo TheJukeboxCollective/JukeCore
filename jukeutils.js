@@ -1,4 +1,4 @@
-const print = console.log
+const path = require('path')
 
 const BADGES = require("./badges.json")
 
@@ -131,6 +131,32 @@ const JukeUtils = {
 
 		return songs
 	},
+	songPath: async (song) => {
+		var serverPath = process.env["serverdir"]
+		const { readdir } = require('node:fs/promises')
+	    var files = await readdir(path.join(serverPath, song.battleID))
+
+	    // Extension
+	    var ext;
+	    for (let i = 0; i < files.length; i++) {
+	      var file = files[i]
+	      if (file.startsWith(song._id)) {
+	        var namebits = file.split(".")
+	        ext = namebits[namebits.length-1]
+	        break
+	      }
+	    }
+
+	    return path.join(serverPath, song.battleID, `${song._id}.${ext}`)
+	},
+	fancy_title: async (song) => {
+		print(song.authors)
+		var proms = song.authors.map(author => JukeBotClient.users.fetch(author))
+		var res = await Promise.all(proms)
+
+		var authorNames = res.map(author => author.username).join(", ")
+		return (`${authorNames} - ${song.title}`)
+	}
 }
 
 module.exports = JukeUtils

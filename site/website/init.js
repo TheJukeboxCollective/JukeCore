@@ -142,7 +142,7 @@ Array.prototype.last = function () {
 	return this[this.length-1]
 }
 
-Array.prototype.asyncForEach = async function(func) {
+Array.prototype.awaitForEach = async function(func) {
 	var proms = []
 
 	this.forEach((...args) => {

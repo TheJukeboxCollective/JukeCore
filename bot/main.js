@@ -1,4 +1,3 @@
-const print = console.log
 const fs = require('node:fs')
 
 const token = process.env['token']
@@ -23,6 +22,8 @@ const REACT_CHL = process.env['react_chl']
 const REACT_MSG = process.env['react_msg']
 const MUSICIAN_ROLE = process.env['musi_role']
 const SUBSCRIBER_ROLE = process.env['sub_role']
+
+require("./music.js")
 
 const {MemberDB} = require("../jukedb.js")
 
@@ -72,7 +73,7 @@ module.exports = client => {
 
     async function registerSlashCommands() {
         try {
-            print(`Started refreshing ${commands.length} application (/) commands.`);
+            log(`Started refreshing ${commands.length} application (/) commands.`);
 
             // The put method is used to fully refresh all commands in the guild with the current set
             const data = await rest.put(
@@ -80,7 +81,7 @@ module.exports = client => {
                 { body: commands },
             );
 
-            print(`Successfully reloaded ${data.length} application (/) commands.`);
+            log(`Successfully reloaded ${data.length} application (/) commands.`);
         } catch (error) {
             console.error(error);
         }
@@ -168,7 +169,7 @@ module.exports = client => {
             })
         })
 
-        print("- Reaction roles updated!")
+        log("- Reaction roles updated!")
     }
 
     async function updateBadgesAndTiers(guild) {
@@ -203,7 +204,7 @@ module.exports = client => {
 
         client.on("guildMemberUpdate", async (oldMember, newMember) => { memberUpdater(newMember) })
 
-        print("- Tiers & Badges sync'd!")
+        log("- Tiers & Badges sync'd!")
     }
 
     async function updateTokens(guild) {
@@ -218,11 +219,11 @@ module.exports = client => {
                 // print(`${member.user.username} OWNS A PC, WTFF`)
             }
         })
-        print("- PC Tokens updated!")
+        log("- PC Tokens updated!")
     }
 
     client.on("ready", async () => {
-        print(`Bot Logged in...`)
+        log(`Bot Logged in...`)
 
         let guild = await client.guilds.fetch(GUILD_ID)
         let theseProms = [
@@ -233,7 +234,7 @@ module.exports = client => {
 
         await Promise.all(theseProms)
 
-        print(`${client.user.username} Initialized!`)
+        log(`${client.user.username} Initialized!`)
     })
 
     client.on("messageCreate", async msg => {

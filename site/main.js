@@ -1,5 +1,3 @@
-const print = console.log
-
 const path = require('path')
 var request = require('sync-request')
 var moment = require('moment')
@@ -77,7 +75,7 @@ const PAGES = {
   "ABOUT": "home",
   "RELEASES": "releases",
   "RELEASE": "release*",
-  "ALBUMS/PKMN-MM-2022": "pkmn-mm-2022",
+  "ARTISTS": "artists",
 }
 
 const getMethods = (obj) => {
@@ -534,12 +532,12 @@ module.exports = (client) => {
           }
           var likes = res[0]
           var member = res[1]
-          callback([
-            (channel ? serialize(channel) : null),
-            likes,
-            serialize(JukeUtils.getTier(member.roles)),
-            serialize(JukeUtils.getBadges(member)),
-          ])
+          callback((member ? [
+                      (channel ? serialize(channel) : null),
+                      likes,
+                      serialize(JukeUtils.getTier(member.roles)),
+                      serialize(JukeUtils.getBadges(member)),
+          ] : null))
         break;
         case "getBadges":
           var guild = await client.guilds.fetch(GUILD_ID)
@@ -783,6 +781,12 @@ module.exports = (client) => {
 
       callback(member)
     })
+
+    socket.on("getAllNotionMembers", async (callback) => {
+      var members = notion.post("databases/328567ace2f74edb947f1089ebedfb51/query")
+
+      callback(members.results)
+    })
   })
 
   app.use(function(req, res, next) {
@@ -793,6 +797,6 @@ module.exports = (client) => {
   //////////////////////////
 
   httpserver.listen(8080, "0.0.0.0", (e) => {
-    print("Server Listening!")
+    log("Server Listening!")
   })
 }
